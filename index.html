@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G-Code Print Viewer</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="app">
+<header>
+  <div><h1>G-Code Print Viewer</h1><p>Preview and inspect 3D-printer G-code without modifying it.</p></div>
+  <div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g">Open G-code</label><button id="clear">Clear</button></div>
+</header>
+<div id="status" class="status" aria-live="polite">Open a G-code file to begin.</div>
+
+<section class="hero">
+  <article class="card preview">
+    <div class="heading"><h2>Thumbnail Preview</h2><span id="fileLabel">No file loaded</span></div>
+    <div class="canvasBox">
+      <canvas id="canvas" width="720" height="520" aria-label="G-code top-down thumbnail"></canvas>
+      <div id="empty" class="empty"><b>No G-code loaded</b><span>Choose a .gcode file to generate a preview.</span></div>
+    </div>
+  </article>
+  <article class="card info"><h2>Basic Print Information</h2><dl id="basic"></dl></article>
+</section>
+
+<section class="tabsCard">
+<nav class="tabs" aria-label="Print information">
+<button class="tab active" data-tab="preview">Preview</button>
+<button class="tab" data-tab="dimensions">Dimensions</button>
+<button class="tab" data-tab="temperatures">Temperatures</button>
+<button class="tab" data-tab="speeds">Print Speeds</button>
+<button class="tab" data-tab="filament">Filament Extrusion</button>
+<button class="tab" data-tab="cooling">Fan Cooling</button>
+</nav>
+<div class="content">
+<section id="preview" class="panel active"><div class="grid"><div class="metric"><h3>Preview</h3><p>The v0.1.0 renderer creates a static top-down thumbnail from extrusion moves. The same geometry pipeline is intended to become the interactive renderer later.</p></div><div class="metric"><h3>File</h3><p id="previewFile">No file loaded.</p><p class="note">Travel moves are omitted from the thumbnail.</p></div></div></section>
+<section id="dimensions" class="panel" hidden><div id="dimensionsContent" class="grid"></div></section>
+<section id="temperatures" class="panel" hidden><div id="temperaturesContent" class="grid"></div></section>
+<section id="speeds" class="panel" hidden><div id="speedsContent" class="grid"></div></section>
+<section id="filament" class="panel" hidden><div id="filamentContent" class="grid"></div></section>
+<section id="cooling" class="panel" hidden><div id="coolingContent" class="grid"></div></section>
+</div>
+</section>
+<footer>G-Code Print Viewer v0.1.0 <span>• Runs locally in your browser</span></footer>
+</main>
+<script src="js/gcode-parser.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
