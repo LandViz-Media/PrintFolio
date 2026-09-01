@@ -1,7 +1,7 @@
 /**
- * PrintFolio v0.1.2
+ * PrintFolio v0.1.4
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
- * material-cost tracking, and future reprint-planning placeholders.
+ * material-cost tracking, JSON import/export, and future reprint planning.
  */
 (function(){
   "use strict";
@@ -9,11 +9,45 @@
   const esc=v=>String(v??"—").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"),dash=v=>v===null||v===undefined||v===""?"—":v;
   const mm=v=>Number.isFinite(v)?v.toFixed(2)+" mm":"—",temp=v=>Number.isFinite(v)?v.toFixed(0)+" °C":"—",speed=v=>Number.isFinite(v)?(v/60).toFixed(1)+" mm/s":"—",meters=v=>Number.isFinite(v)?v.toFixed(2)+" m":"—",grams=v=>Number.isFinite(v)?v.toFixed(2)+" g":"—";
   function table(title,rows){return `<div class="metric"><h3>${esc(title)}</h3><table><tbody>${rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(dash(r[1]))}</td></tr>`).join("")}</tbody></table></div>`}
-  function materialLibrary(){try{return JSON.parse(localStorage.getItem("printfolio.materials")||"[]")}catch(_){return[]}}
+
+  const defaultMaterials=[
+    {id:"overture-pla-digital-blue-2025-12-20",brand:"Overture",material:"PLA",color:"Digital Blue",diameter:1.75,purchased:"2025-12-20",opened:"2025-12-30",totalWeight:1000,totalCost:17.68},
+    {id:"hatchbox-petg-orange-2023-01-15",brand:"Hatchbox",material:"PETG",color:"Orange",diameter:1.75,purchased:"2023-01-15",opened:null,totalWeight:1000,totalCost:25.50},
+    {id:"hatchbox-pla-grey-2020-04-15",brand:"Hatchbox",material:"PLA",color:"Grey",diameter:1.75,purchased:"2020-04-15",opened:null,totalWeight:1000,totalCost:25.00}
+  ];
+  const defaultProfiles=[
+    {materialId:"overture-pla-digital-blue-2025-12-20",printer:"Creality Ender-3 Pro",nozzleTemperature:212,bedTemperature:55,printSpeed:80,notes:"Temp 212°C, bed 55°C, speed 80 mm/s on Ender-3 Pro"},
+    {materialId:"hatchbox-petg-orange-2023-01-15",printer:"Creality Ender-3 Pro",nozzleTemperature:243,bedTemperature:60,printSpeed:80,notes:"Temp 243°C, bed 60°C, speed 80 mm/s on Ender-3 Pro"},
+    {materialId:"hatchbox-pla-grey-2020-04-15",printer:"Creality Ender-3 Pro",nozzleTemperature:208,bedTemperature:55,printSpeed:80,notes:"Temp 208°C, bed 55°C, speed 80 mm/s on Ender-3 Pro"}
+  ];
+
+  function materialLibrary(){try{const v=JSON.parse(localStorage.getItem("printfolio.materials")||"null");return Array.isArray(v)?v:defaultMaterials.map(x=>({...x}))}catch(_){return defaultMaterials.map(x=>({...x}))}}
+  function materialProfiles(){try{const v=JSON.parse(localStorage.getItem("printfolio.materialProfiles")||"null");return Array.isArray(v)?v:defaultProfiles.map(x=>({...x}))}catch(_){return defaultProfiles.map(x=>({...x}))}}
   function saveMaterials(v){localStorage.setItem("printfolio.materials",JSON.stringify(v))}
+  function saveProfiles(v){localStorage.setItem("printfolio.materialProfiles",JSON.stringify(v))}
+  function ensureSeeded(){if(localStorage.getItem("printfolio.materials")===null)saveMaterials(defaultMaterials.map(x=>({...x})));if(localStorage.getItem("printfolio.materialProfiles")===null)saveProfiles(defaultProfiles.map(x=>({...x})))}
   function materialCost(p,m){if(!m||!Number.isFinite(p.filamentGrams)||!Number.isFinite(m.totalWeight)||m.totalWeight<=0||!Number.isFinite(m.totalCost))return null;return p.filamentGrams/m.totalWeight*m.totalCost}
-  function renderMaterials(){const list=materialLibrary(),sel=$("materialSelect");sel.innerHTML=`<option value="">Select material…</option>`+list.map((m,i)=>`<option value="${i}">${esc(m.name)}${m.color?" — "+esc(m.color):""}</option>`).join("");$("materialList").innerHTML=list.length?list.map((m,i)=>`<tr><td>${esc(m.name)}</td><td>${esc(m.color||"—")}</td><td>${esc(m.purchased||"—")}</td><td>${esc(m.opened||"—")}</td><td>${Number(m.totalWeight||0).toFixed(0)} g</td><td>$${Number(m.totalCost||0).toFixed(2)}</td><td><button class="small danger" data-remove="${i}">Remove</button></td></tr>`).join(""): `<tr><td colspan="7" class="note">No materials saved yet. Materials are stored only in this browser.</td></tr>`;updateCost()}
-  function updateCost(){const p=state.parsed,idx=$("materialSelect")?.value,list=materialLibrary(),m=idx!==""?list[Number(idx)]:null;$("costResult").textContent=p&&m?((materialCost(p,m)!==null)?`Estimated material cost: $${materialCost(p,m).toFixed(2)}`:"Estimated material cost requires filament weight in the print file."):"Select a material to estimate print cost."}
+  function materialLabel(m){return `${m.brand||"Unknown brand"} — ${m.material||"Unknown material"}${m.color?" — "+m.color:""}`}
+
+  function renderMaterials(){
+    const list=materialLibrary(),sel=$("materialSelect");
+    sel.innerHTML=`<option value="">Select material…</option>`+list.map((m,i)=>`<option value="${i}">${esc(materialLabel(m))}</option>`).join("");
+    $("materialList").innerHTML=list.length?list.map((m,i)=>`<tr><td>${esc(m.brand||"—")}</td><td>${esc(m.material||"—")}</td><td>${esc(m.color||"—")}</td><td>${esc(m.diameter??"—")} mm</td><td>${esc(m.purchased||"—")}</td><td>${esc(m.opened||"Unknown")}</td><td>${Number(m.totalWeight||0).toFixed(0)} g</td><td>$${Number(m.totalCost||0).toFixed(2)}</td><td><button class="small danger" data-remove="${i}">Remove</button></td></tr>`).join(""):`<tr><td colspan="9" class="note">No materials saved yet.</td></tr>`;
+    updateCost();
+  }
+
+  function updateProfiles(materialIndex){
+    const list=materialLibrary(),profiles=materialProfiles(),m=list[Number(materialIndex)];
+    const relevant=m?profiles.filter(p=>p.materialId===m.id):[];
+    $("profileList").innerHTML=relevant.length?relevant.map(p=>`<div class="profile"><b>${esc(p.printer||"Printer profile")}</b><span>Nozzle ${esc(p.nozzleTemperature??"—")} °C</span><span>Bed ${esc(p.bedTemperature??"—")} °C</span><span>Speed ${esc(p.printSpeed??"—")} mm/s</span>${p.notes?`<span>${esc(p.notes)}</span>`:""}</div>`).join(""):`<div class="note">Select a material to see printer-specific notes. A future version will let you add, edit, and remove profiles here.</div>`;
+  }
+
+  function updateCost(){
+    const p=state.parsed,idx=$("materialSelect")?.value,list=materialLibrary(),m=idx!==""?list[Number(idx)]:null;
+    $("costResult").textContent=p&&m?((materialCost(p,m)!==null)?`Estimated material cost: $${materialCost(p,m).toFixed(2)}`:"Estimated material cost requires filament weight in the print file."):"Select a material to estimate print cost.";
+    updateProfiles(idx);
+  }
+
   function update(p){
     $("basic").innerHTML=[["Print",p.fileName],["File Type",p.fileType],["Printer",p.printer],["Slicer",p.slicer],["Source Model",p.sourceModel],["Material",p.materialType],["Print Time",p.printTimeDisplay],["Filament",p.filamentMeters!==null?meters(p.filamentMeters):grams(p.filamentGrams)]].map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(dash(r[1]))}</dd></div>`).join("");
     const zNote=p.dimensionNotes?.length?p.dimensionNotes.join(" "):null;
@@ -24,15 +58,43 @@
     $("coolingContent").innerHTML=table("Fan Cooling",[["Cooling commands detected",p.coolingDetected?"Yes":"No"],["Maximum fan command",p.fanMax===null?"—":p.fanMax+" / 255"]])+table("File",[["G-code flavor",p.gcodeFlavor],["Thumbnail source",p.thumbnailSource||"PrintFolio renderer"]]);
     $("bedsetupContent").innerHTML=table("Bed / Leveling",[["Homing detected",p.bedSetup.homing?"Yes":"Not detected"],["Mesh probing detected",p.bedSetup.meshProbe?"Yes":"Not detected"],["Mesh load detected",p.bedSetup.meshLoad?"Yes":"Not detected"],["Leveling commands",p.bedSetup.meshCommands.length?p.bedSetup.meshCommands.join(", "):"—"],["Bed shape",p.bedSetup.bedShape]])+table("Printer Setup",[["Printer",p.printer],["Nozzle diameter",p.bedSetup.nozzleDiameter!==null?p.bedSetup.nozzleDiameter+" mm":"—"],["Filament diameter",p.bedSetup.filamentDiameter!==null?p.bedSetup.filamentDiameter+" mm":"—"],["Extruder count",p.bedSetup.extruderCount]]);
     $("settingsContent").innerHTML=table("Supports & Infill",[["Supports",p.printSettings.support],["Support build plate only",p.printSettings.supportBuildplateOnly],["Infill density",p.printSettings.infillDensity],["Infill pattern",p.printSettings.infillPattern]])+table("Shell & Adhesion",[["Wall / perimeter lines",p.printSettings.wallLines],["Top layers",p.printSettings.topLayers],["Bottom layers",p.printSettings.bottomLayers],["Brim width",p.printSettings.brimWidth!==null?p.printSettings.brimWidth+" mm":null],["Raft",p.printSettings.raft],["Skirt lines / height",p.printSettings.skirtLines],["Ironing",p.printSettings.ironing],["Adhesion",p.printSettings.adhesion]])+`<div class="metric future"><h3>Future: Reprint Planning</h3><p>PrintFolio will eventually let you create a new print plan from this file—changing material, temperature, speed, fan cooling, supports, infill, and other settings while preserving the original print record.</p><p class="note">v0.1.x is intentionally read-only.</p></div>`;
-    $("materialFileSummary").innerHTML=table("Current Print",[["Material in file",p.materialType],["Color in file",p.materialColor],["Filament used",p.filamentGrams!==null?grams(p.filamentGrams):meters(p.filamentMeters)],["Cost from file",p.filamentCost!==null?"$"+p.filamentCost.toFixed(2):"Not reported"]]);renderMaterials();
+    $("materialFileSummary").innerHTML=table("Current Print",[["Material in file",p.materialType],["Color in file",p.materialColor],["Filament used",p.filamentGrams!==null?grams(p.filamentGrams):meters(p.filamentMeters)],["Cost from file",p.filamentCost!==null?"$"+p.filamentCost.toFixed(2):"Not reported"]]);
+    renderMaterials();
   }
+
   function empty(){const html='<div class="emptyPanel">Open a G-code, BGCODE, or 3MF file to populate this section.</div>';["dimensionsContent","temperaturesContent","speedsContent","filamentContent","coolingContent","bedsetupContent","settingsContent","materialFileSummary"].forEach(id=>$(id).innerHTML=html);renderMaterials()}
-  function clear(){state.parsed=null;const c=canvas.getContext("2d");c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle="#edf2f4";c.fillRect(0,0,canvas.width,canvas.height);$("empty").hidden=false;$("fileLabel").textContent="No file loaded";$("previewFile").textContent="No file loaded.";$("status").textContent="Open a G-code, BGCODE, or 3MF file to begin.";$("basic").innerHTML=[["Print","—"],["File Type","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty()}
-  file.addEventListener("change",()=>{const f=file.files?.[0];if(!f)return;$("status").textContent="Reading "+f.name+"…";const r=new FileReader();r.onload=async e=>{try{const p=await GCodeParser.parseBytes(new Uint8Array(e.target.result),f.name);state.parsed=p;GCodeRenderer.renderThumbnail(canvas,p);$("empty").hidden=true;$("fileLabel").textContent=f.name;$("previewFile").textContent=f.name;update(p);const extra=p.fileType==="BGCODE"?" • embedded metadata read":p.fileType==="3MF"?" • project metadata/model read":"";$("status").textContent=`Loaded ${f.name} • ${p.fileType}${extra}.`;}catch(err){console.error(err);$("status").textContent="Could not parse the file: "+err.message}};r.onerror=()=>$("status").textContent="The file could not be read.";r.readAsArrayBuffer(f)});
+
+  function clear(){
+    state.parsed=null;
+    const c=canvas.getContext("2d");c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle="#f4f7f8";c.fillRect(0,0,canvas.width,canvas.height);
+    $("empty").hidden=false;$("empty").style.display="flex";$("fileLabel").textContent="No file loaded";$("previewFile").textContent="No file loaded.";$("status").textContent="Open a G-code, BGCODE, or 3MF file to begin.";
+    $("basic").innerHTML=[["Print","—"],["File Type","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty();
+  }
+
+  async function importMaterials(fileObject){
+    try{
+      const text=await fileObject.text(),data=JSON.parse(text),materials=Array.isArray(data)?data:data.materials,profiles=data.profiles||[];
+      if(!Array.isArray(materials))throw new Error("JSON must contain a materials array.");
+      saveMaterials(materials);if(Array.isArray(profiles))saveProfiles(profiles);renderMaterials();
+      $("materialStatus").textContent=`Imported ${materials.length} material${materials.length===1?"":"s"}${Array.isArray(profiles)?` and ${profiles.length} printer profile${profiles.length===1?"":"s"}`:""}.`;
+    }catch(err){$("materialStatus").textContent="Could not import material JSON: "+err.message}
+  }
+
+  function exportMaterials(){
+    const data={version:1,materials:materialLibrary(),profiles:materialProfiles()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="printfolio-material-library.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $("materialStatus").textContent="Material library exported as JSON.";
+  }
+
+  ensureSeeded();
+  file.addEventListener("change",()=>{const f=file.files?.[0];if(!f)return;$("status").textContent="Reading "+f.name+"…";const r=new FileReader();r.onload=async e=>{try{const p=await GCodeParser.parseBytes(new Uint8Array(e.target.result),f.name);state.parsed=p;GCodeRenderer.renderThumbnail(canvas,p);const empty=$("empty");empty.hidden=true;empty.style.display="none";$("fileLabel").textContent=f.name;$("previewFile").textContent=f.name;update(p);const extra=p.fileType==="BGCODE"?" • embedded metadata read":p.fileType==="3MF"?" • project metadata/model read":"";$("status").textContent=`Loaded ${f.name} • ${p.fileType}${extra}.`;}catch(err){console.error(err);$("status").textContent="Could not parse the file: "+err.message}};r.onerror=()=>$("status").textContent="The file could not be read.";r.readAsArrayBuffer(f)});
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
-  $("materialForm").addEventListener("submit",e=>{e.preventDefault();const m={name:$("matName").value.trim(),color:$("matColor").value.trim(),purchased:$("matPurchased").value,opened:$("matOpened").value,totalWeight:Number($("matWeight").value),totalCost:Number($("matCost").value)};if(!m.name)return;const list=materialLibrary();list.push(m);saveMaterials(list);e.target.reset();renderMaterials()});
-  $("materialList").addEventListener("click",e=>{const i=e.target.dataset.remove;if(i===undefined)return;const list=materialLibrary();list.splice(Number(i),1);saveMaterials(list);renderMaterials()});
+  $("materialForm").addEventListener("submit",e=>{e.preventDefault();const m={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),brand:$("matBrand").value.trim(),material:$("matName").value.trim(),color:$("matColor").value.trim(),diameter:Number($("matDiameter").value),purchased:$("matPurchased").value||null,opened:$("matOpened").value||null,totalWeight:Number($("matWeight").value),totalCost:Number($("matCost").value)};if(!m.brand||!m.material||!Number.isFinite(m.totalWeight)||!Number.isFinite(m.totalCost))return;const list=materialLibrary();list.push(m);saveMaterials(list);e.target.reset();renderMaterials();$("materialStatus").textContent="Material added. Printer-specific notes can be attached as profiles in a future library manager."});
+  $("materialList").addEventListener("click",e=>{const i=e.target.dataset.remove;if(i===undefined)return;const list=materialLibrary(),removed=list[Number(i)];list.splice(Number(i),1);saveMaterials(list);const profiles=materialProfiles().filter(p=>p.materialId!==removed?.id);saveProfiles(profiles);renderMaterials()});
+  $("importMaterials").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importMaterials(f);e.target.value=""});
+  $("exportMaterials").addEventListener("click",exportMaterials);
   clear();
 })();
