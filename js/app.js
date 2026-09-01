@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.4
+ * PrintFolio v0.1.5
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */
@@ -11,9 +11,9 @@
   function table(title,rows){return `<div class="metric"><h3>${esc(title)}</h3><table><tbody>${rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(dash(r[1]))}</td></tr>`).join("")}</tbody></table></div>`}
 
   const defaultMaterials=[
-    {id:"overture-pla-digital-blue-2025-12-20",brand:"Overture",material:"PLA",color:"Digital Blue",diameter:1.75,purchased:"2025-12-20",opened:"2025-12-30",totalWeight:1000,totalCost:17.68},
-    {id:"hatchbox-petg-orange-2023-01-15",brand:"Hatchbox",material:"PETG",color:"Orange",diameter:1.75,purchased:"2023-01-15",opened:null,totalWeight:1000,totalCost:25.50},
-    {id:"hatchbox-pla-grey-2020-04-15",brand:"Hatchbox",material:"PLA",color:"Grey",diameter:1.75,purchased:"2020-04-15",opened:null,totalWeight:1000,totalCost:25.00}
+    {id:"overture-pla-digital-blue-2025-12-20",brand:"Overture",material:"PLA",color:"Digital Blue",diameter:1.75,density:1.24,purchased:"2025-12-20",opened:"2025-12-30",totalWeight:1000,totalCost:17.68},
+    {id:"hatchbox-petg-orange-2023-01-15",brand:"Hatchbox",material:"PETG",color:"Orange",diameter:1.75,density:1.27,purchased:"2023-01-15",opened:null,totalWeight:1000,totalCost:25.50},
+    {id:"hatchbox-pla-grey-2020-04-15",brand:"Hatchbox",material:"PLA",color:"Grey",diameter:1.75,density:1.24,purchased:"2020-04-15",opened:null,totalWeight:1000,totalCost:25.00}
   ];
   const defaultProfiles=[
     {materialId:"overture-pla-digital-blue-2025-12-20",printer:"Creality Ender-3 Pro",nozzleTemperature:212,bedTemperature:55,printSpeed:80,notes:"Temp 212°C, bed 55°C, speed 80 mm/s on Ender-3 Pro"},
@@ -26,13 +26,13 @@
   function saveMaterials(v){localStorage.setItem("printfolio.materials",JSON.stringify(v))}
   function saveProfiles(v){localStorage.setItem("printfolio.materialProfiles",JSON.stringify(v))}
   function ensureSeeded(){if(localStorage.getItem("printfolio.materials")===null)saveMaterials(defaultMaterials.map(x=>({...x})));if(localStorage.getItem("printfolio.materialProfiles")===null)saveProfiles(defaultProfiles.map(x=>({...x})))}
-  function materialCost(p,m){if(!m||!Number.isFinite(p.filamentGrams)||!Number.isFinite(m.totalWeight)||m.totalWeight<=0||!Number.isFinite(m.totalCost))return null;return p.filamentGrams/m.totalWeight*m.totalCost}
+  function materialEstimate(p,m){if(!m||!Number.isFinite(m.totalWeight)||m.totalWeight<=0||!Number.isFinite(m.totalCost))return null;let grams=p.filamentGrams,source="reported weight";if(!Number.isFinite(grams)&&Number.isFinite(p.filamentMeters)&&Number.isFinite(m.diameter)&&Number.isFinite(m.density)){const radiusCm=(m.diameter/10)/2,lengthCm=p.filamentMeters*100;grams=Math.PI*radiusCm*radiusCm*lengthCm*m.density;source="estimated from length, diameter, and density"}if(!Number.isFinite(grams))return null;return{grams,cost:grams/m.totalWeight*m.totalCost,source}}
   function materialLabel(m){return `${m.brand||"Unknown brand"} — ${m.material||"Unknown material"}${m.color?" — "+m.color:""}`}
 
   function renderMaterials(){
     const list=materialLibrary(),sel=$("materialSelect");
     sel.innerHTML=`<option value="">Select material…</option>`+list.map((m,i)=>`<option value="${i}">${esc(materialLabel(m))}</option>`).join("");
-    $("materialList").innerHTML=list.length?list.map((m,i)=>`<tr><td>${esc(m.brand||"—")}</td><td>${esc(m.material||"—")}</td><td>${esc(m.color||"—")}</td><td>${esc(m.diameter??"—")} mm</td><td>${esc(m.purchased||"—")}</td><td>${esc(m.opened||"Unknown")}</td><td>${Number(m.totalWeight||0).toFixed(0)} g</td><td>$${Number(m.totalCost||0).toFixed(2)}</td><td><button class="small danger" data-remove="${i}">Remove</button></td></tr>`).join(""):`<tr><td colspan="9" class="note">No materials saved yet.</td></tr>`;
+    $("materialList").innerHTML=list.length?list.map((m,i)=>`<tr><td>${esc(m.brand||"—")}</td><td>${esc(m.material||"—")}</td><td>${esc(m.color||"—")}</td><td>${esc(m.diameter??"—")} mm</td><td>${esc(m.density??"—")} g/cm³</td><td>${esc(m.purchased||"—")}</td><td>${esc(m.opened||"Unknown")}</td><td>${Number(m.totalWeight||0).toFixed(0)} g</td><td>$${Number(m.totalCost||0).toFixed(2)}</td><td><button class="small danger" data-remove="${i}">Remove</button></td></tr>`).join(""):`<tr><td colspan="9" class="note">No materials saved yet.</td></tr>`;
     updateCost();
   }
 
@@ -43,8 +43,8 @@
   }
 
   function updateCost(){
-    const p=state.parsed,idx=$("materialSelect")?.value,list=materialLibrary(),m=idx!==""?list[Number(idx)]:null;
-    $("costResult").textContent=p&&m?((materialCost(p,m)!==null)?`Estimated material cost: $${materialCost(p,m).toFixed(2)}`:"Estimated material cost requires filament weight in the print file."):"Select a material to estimate print cost.";
+    const p=state.parsed,idx=$("materialSelect")?.value,list=materialLibrary(),m=idx!==""?list[Number(idx)]:null,est=p&&m?materialEstimate(p,m):null;
+    $("costResult").innerHTML=p&&m?(est?`Estimated weight: <b>${est.grams.toFixed(2)} g</b><br>Estimated material cost: <b>$${est.cost.toFixed(2)}</b><br><span class="note">${esc(est.source)}</span>`:"This file does not contain enough filament information for a weight/cost estimate."):"Select a material to estimate print cost.";
     updateProfiles(idx);
   }
 
@@ -92,9 +92,10 @@
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
-  $("materialForm").addEventListener("submit",e=>{e.preventDefault();const m={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),brand:$("matBrand").value.trim(),material:$("matName").value.trim(),color:$("matColor").value.trim(),diameter:Number($("matDiameter").value),purchased:$("matPurchased").value||null,opened:$("matOpened").value||null,totalWeight:Number($("matWeight").value),totalCost:Number($("matCost").value)};if(!m.brand||!m.material||!Number.isFinite(m.totalWeight)||!Number.isFinite(m.totalCost))return;const list=materialLibrary();list.push(m);saveMaterials(list);e.target.reset();renderMaterials();$("materialStatus").textContent="Material added. Printer-specific notes can be attached as profiles in a future library manager."});
+  $("materialForm").addEventListener("submit",e=>{e.preventDefault();const m={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),brand:$("matBrand").value.trim(),material:$("matName").value.trim(),color:$("matColor").value.trim(),diameter:Number($("matDiameter").value),purchased:$("matPurchased").value||null,opened:$("matOpened").value||null,density:Number($("matDensity").value),density:Number($("matDensity").value),totalWeight:Number($("matWeight").value),totalCost:Number($("matCost").value)};if(!m.brand||!m.material||!Number.isFinite(m.density)||m.density<=0||!Number.isFinite(m.totalWeight)||!Number.isFinite(m.totalCost))return;const list=materialLibrary();list.push(m);saveMaterials(list);e.target.reset();renderMaterials();$("materialStatus").textContent="Material added. Printer-specific notes can be attached as profiles in a future library manager."});
   $("materialList").addEventListener("click",e=>{const i=e.target.dataset.remove;if(i===undefined)return;const list=materialLibrary(),removed=list[Number(i)];list.splice(Number(i),1);saveMaterials(list);const profiles=materialProfiles().filter(p=>p.materialId!==removed?.id);saveProfiles(profiles);renderMaterials()});
   $("importMaterials").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importMaterials(f);e.target.value=""});
   $("exportMaterials").addEventListener("click",exportMaterials);
+  $("openMaterialEditor").addEventListener("click",()=>window.open("material-editor.html","printfolio-material-editor","width=1200,height=800,resizable=yes,scrollbars=yes"));
   clear();
 })();

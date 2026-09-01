@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.5"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.4"></head>
 <body><main class="app">
-<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button">Material Library</button><button id="clear">Clear</button></div></header>
+<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="clear">Clear</button></div></header>
 <div id="status" class="status" aria-live="polite">Open a G-code, BGCODE, or 3MF file to begin.</div>
 <section class="hero"><article class="card preview"><div class="heading"><h2>Thumbnail Preview</h2><span id="fileLabel">No file loaded</span></div><div class="canvasBox"><canvas id="canvas" width="720" height="520" aria-label="3D print thumbnail"></canvas><div id="empty" class="empty"><b>No print file loaded</b><span>Choose a G-code, BGCODE, or 3MF file to generate a preview.</span></div></div></article>
 <article class="card info"><h2>Basic Print Information</h2><dl id="basic"></dl></article></section>
@@ -37,7 +37,6 @@
     <div class="materialField"><label for="matName">Material</label><input id="matName" placeholder="e.g. PLA" required></div>
     <div class="materialField"><label for="matColor">Color</label><input id="matColor" placeholder="e.g. Digital Blue"></div>
     <div class="materialField"><label for="matDiameter">Diameter (mm)</label><input id="matDiameter" type="number" min="0" step="0.01" value="1.75" required></div>
-    <div class="materialField"><label for="matDensity">Density (g/cm³)</label><input id="matDensity" type="number" min="0" step="0.01" placeholder="1.24" required></div>
     <div class="materialField"><label for="matPurchased">Date purchased</label><input id="matPurchased" type="date"></div>
     <div class="materialField"><label for="matOpened">Date opened</label><input id="matOpened" type="date"></div>
     <div class="materialField"><label for="matWeight">Total weight (g)</label><input id="matWeight" type="number" min="0" step="1" placeholder="1000" required></div>
@@ -50,12 +49,12 @@
     <span id="materialStatus" class="note">Starter library is prepopulated from the current material list.</span>
   </div>
   <div class="tableScroll">
-    <table class="libraryTable"><thead><tr><th>Brand</th><th>Material</th><th>Color</th><th>Diameter</th><th>Density</th><th>Purchased</th><th>Opened</th><th>Weight</th><th>Cost</th><th></th></tr></thead><tbody id="materialList"></tbody></table>
+    <table class="libraryTable"><thead><tr><th>Brand</th><th>Material</th><th>Color</th><th>Diameter</th><th>Purchased</th><th>Opened</th><th>Weight</th><th>Cost</th><th></th></tr></thead><tbody id="materialList"></tbody></table>
   </div>
   <p class="note">Stored locally in this browser. JSON import/export is the temporary library-management method. A future manager will provide dedicated add, edit, delete, spool tracking, and printer-profile management.</p>
 </div>
 <div class="metric future"><h3>Future: Material Library Manager</h3><p>Dedicated tools will allow you to add, edit, delete, duplicate, and track individual spools. Printer-specific material profiles will remain separate from the physical spool record.</p></div>
 <div class="metric future"><h3>Future: Reprint / Update</h3><p>This will become a planning workspace for older prints: select a current material and printer, compare the original settings with the selected profile, and adjust temperatures, speeds, fan cooling, supports, infill, and other settings for a new print without altering the original print record.</p><p class="note">v0.1.x remains intentionally read-only.</p></div>
 </section></div></section>
-<footer>PrintFolio v0.1.5 <span>• Runs locally in your browser</span></footer></main>
-<script src="js/gcode-parser.js?v=0.1.5"></script><script src="js/renderer.js?v=0.1.5"></script><script src="js/app.js?v=0.1.5"></script></body></html>
+<footer>PrintFolio v0.1.4 <span>• Runs locally in your browser</span></footer></main>
+<script src="js/gcode-parser.js?v=0.1.4"></script><script src="js/renderer.js?v=0.1.4"></script><script src="js/app.js?v=0.1.4"></script><script>window.addEventListener('load',async()=>{const f=await fetch('examples/Remote%20Roku%20Case.gcode');const b=new Uint8Array(await f.arrayBuffer());const p=await GCodeParser.parseBytes(b,'Remote Roku Case.gcode');stateHack(p)});function stateHack(p){GCodeRenderer.renderThumbnail(document.getElementById('canvas'),p);const e=document.getElementById('empty');e.hidden=true;e.style.display='none';document.getElementById('fileLabel').textContent=p.fileName;document.getElementById('previewFile').textContent=p.fileName;document.getElementById('status').textContent='Loaded test file';document.getElementById('basic').innerHTML=[['Print',p.fileName],['File Type',p.fileType],['Printer',p.printer],['Slicer',p.slicer],['Source Model',p.sourceModel],['Material',p.materialType],['Print Time',p.printTimeDisplay],['Filament',p.filamentMeters!==null?(p.filamentMeters).toFixed(2)+' m':'—']].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]||'—'}</dd></div>`).join('');}}</script></body></html>

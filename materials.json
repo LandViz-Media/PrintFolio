@@ -10,7 +10,8 @@
       "purchased": "2025-12-20",
       "opened": "2025-12-30",
       "totalWeight": 1000,
-      "totalCost": 17.68
+      "totalCost": 17.68,
+      "density": 1.24
     },
     {
       "id": "hatchbox-petg-orange-2023-01-15",
@@ -21,7 +22,8 @@
       "purchased": "2023-01-15",
       "opened": null,
       "totalWeight": 1000,
-      "totalCost": 25.50
+      "totalCost": 25.5,
+      "density": 1.27
     },
     {
       "id": "hatchbox-pla-grey-2020-04-15",
@@ -32,7 +34,8 @@
       "purchased": "2020-04-15",
       "opened": null,
       "totalWeight": 1000,
-      "totalCost": 25.00
+      "totalCost": 25.0,
+      "density": 1.24
     }
   ]
 }
