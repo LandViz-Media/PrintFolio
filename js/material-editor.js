@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.5
+ * PrintFolio v0.1.6
  * Responsibility: Provide the separate Material Library Manager window.
  */
 (function(){

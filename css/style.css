@@ -1,4 +1,4 @@
-/* PrintFolio v0.1.5 — application styling. */
+/* PrintFolio v0.1.6 — application styling. */
 :root{--ink:#17344a;--blue:#2d6f9f;--light:#e7f0f6;--soft:#f2f5f6;--muted:#68757d;--border:#2d6f9f}
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#18252d;font:16px Arial,Helvetica,sans-serif}.app{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 22px}
 header{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:14px}h1{margin:0;color:var(--ink);font-size:clamp(2rem,5vw,3.4rem);font-weight:500;line-height:1}header p{margin:10px 0 0;color:var(--muted)}

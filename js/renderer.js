@@ -32,7 +32,7 @@
       img.src=p.thumbnailDataUrl;
       return;
     }
-    if(p?.geometry?.length){drawGcode(c,w,h,p);return}
+    if(p?.previewGeometry?.length){drawGcode(c,w,h,p);return}
     if(p?.modelGeometry?.length){drawModel(c,w,h,p);return}
     c.fillStyle="#536169";
     c.font="14px Arial";
@@ -93,7 +93,7 @@
 
   function drawGcode(c,w,h,p){
     const pts=[];
-    for(const g of p.geometry){
+    for(const g of (p.previewGeometry||p.geometry)){
       pts.push(project(g.x1,g.y1,g.z),project(g.x2,g.y2,g.z));
     }
     const P=fit(pts,w,h,38),b=boundsOf(pts);
@@ -106,11 +106,11 @@
     c.lineWidth=3.4;
     c.globalAlpha=.22;
     c.lineCap="round";
-    for(const g of p.geometry){const a=P(project(g.x1,g.y1,g.z)),b2=P(project(g.x2,g.y2,g.z));c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b2[0],b2[1]);c.stroke()}
+    for(const g of (p.previewGeometry||p.geometry)){const a=P(project(g.x1,g.y1,g.z)),b2=P(project(g.x2,g.y2,g.z));c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b2[0],b2[1]);c.stroke()}
     c.restore();
 
     // Draw in file order so lower layers naturally sit behind later layers.
-    for(const g of p.geometry){
+    for(const g of (p.previewGeometry||p.geometry)){
       const a=P(project(g.x1,g.y1,g.z)),b2=P(project(g.x2,g.y2,g.z));
       const t=String(g.type||"").toUpperCase();
       c.strokeStyle=featureColor(t);

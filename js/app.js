@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.5
+ * PrintFolio v0.1.6
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */
@@ -25,14 +25,28 @@
   function materialProfiles(){try{const v=JSON.parse(localStorage.getItem("printfolio.materialProfiles")||"null");return Array.isArray(v)?v:defaultProfiles.map(x=>({...x}))}catch(_){return defaultProfiles.map(x=>({...x}))}}
   function saveMaterials(v){localStorage.setItem("printfolio.materials",JSON.stringify(v))}
   function saveProfiles(v){localStorage.setItem("printfolio.materialProfiles",JSON.stringify(v))}
-  function ensureSeeded(){if(localStorage.getItem("printfolio.materials")===null)saveMaterials(defaultMaterials.map(x=>({...x})));if(localStorage.getItem("printfolio.materialProfiles")===null)saveProfiles(defaultProfiles.map(x=>({...x})))}
-  function materialEstimate(p,m){if(!m||!Number.isFinite(m.totalWeight)||m.totalWeight<=0||!Number.isFinite(m.totalCost))return null;let grams=p.filamentGrams,source="reported weight";if(!Number.isFinite(grams)&&Number.isFinite(p.filamentMeters)&&Number.isFinite(m.diameter)&&Number.isFinite(m.density)){const radiusCm=(m.diameter/10)/2,lengthCm=p.filamentMeters*100;grams=Math.PI*radiusCm*radiusCm*lengthCm*m.density;source="estimated from length, diameter, and density"}if(!Number.isFinite(grams))return null;return{grams,cost:grams/m.totalWeight*m.totalCost,source}}
+  function ensureSeeded(){
+    if(localStorage.getItem("printfolio.materials")===null) saveMaterials(defaultMaterials.map(x=>({...x})));
+    else {
+      const current=materialLibrary(),migrated=current.map(m=>({...m}));
+      let changed=false;
+      for(const m of migrated){
+        if(!Number.isFinite(Number(m.density))){
+          const t=String(m.material||"").toUpperCase();
+          const d=t.includes("PETG")?1.27:t.includes("PLA")?1.24:null;
+          if(d!==null){m.density=d;changed=true}
+        }
+      }
+      if(changed)saveMaterials(migrated);
+    }
+    if(localStorage.getItem("printfolio.materialProfiles")===null)saveProfiles(defaultProfiles.map(x=>({...x})));
+  }
+  function materialEstimate(p,m){if(!m||!Number.isFinite(m.totalWeight)||m.totalWeight<=0||!Number.isFinite(m.totalCost))return null;let grams=p.filamentGrams,source="reported weight";if(!Number.isFinite(grams)&&Number.isFinite(p.filamentMeters)&&Number.isFinite(m.diameter)&&Number.isFinite(m.density)){const radiusCm=(m.diameter/10)/2,lengthCm=p.filamentMeters*100;grams=Math.PI*radiusCm*radiusCm*lengthCm*m.density;source="estimated from length, diameter, and density"}if(!Number.isFinite(grams))return null;return{grams,cost:grams/m.totalWeight*m.totalCost,source,rate:m.totalCost/m.totalWeight}}
   function materialLabel(m){return `${m.brand||"Unknown brand"} — ${m.material||"Unknown material"}${m.color?" — "+m.color:""}`}
 
   function renderMaterials(){
     const list=materialLibrary(),sel=$("materialSelect");
     sel.innerHTML=`<option value="">Select material…</option>`+list.map((m,i)=>`<option value="${i}">${esc(materialLabel(m))}</option>`).join("");
-    $("materialList").innerHTML=list.length?list.map((m,i)=>`<tr><td>${esc(m.brand||"—")}</td><td>${esc(m.material||"—")}</td><td>${esc(m.color||"—")}</td><td>${esc(m.diameter??"—")} mm</td><td>${esc(m.density??"—")} g/cm³</td><td>${esc(m.purchased||"—")}</td><td>${esc(m.opened||"Unknown")}</td><td>${Number(m.totalWeight||0).toFixed(0)} g</td><td>$${Number(m.totalCost||0).toFixed(2)}</td><td><button class="small danger" data-remove="${i}">Remove</button></td></tr>`).join(""):`<tr><td colspan="9" class="note">No materials saved yet.</td></tr>`;
     updateCost();
   }
 
@@ -44,7 +58,7 @@
 
   function updateCost(){
     const p=state.parsed,idx=$("materialSelect")?.value,list=materialLibrary(),m=idx!==""?list[Number(idx)]:null,est=p&&m?materialEstimate(p,m):null;
-    $("costResult").innerHTML=p&&m?(est?`Estimated weight: <b>${est.grams.toFixed(2)} g</b><br>Estimated material cost: <b>$${est.cost.toFixed(2)}</b><br><span class="note">${esc(est.source)}</span>`:"This file does not contain enough filament information for a weight/cost estimate."):"Select a material to estimate print cost.";
+    $("costResult").innerHTML=p&&m?(est?`Estimated weight: <b>${est.grams.toFixed(2)} g</b><br>Estimated material cost: <b>$${est.cost.toFixed(2)}</b><br><span class="note">${esc(est.source)} · $${est.rate.toFixed(4)}/g</span>`:"This file does not contain enough filament information for a weight/cost estimate."):"Select a material to estimate print cost.";
     updateProfiles(idx);
   }
 
@@ -60,6 +74,9 @@
     $("settingsContent").innerHTML=table("Supports & Infill",[["Supports",p.printSettings.support],["Support build plate only",p.printSettings.supportBuildplateOnly],["Infill density",p.printSettings.infillDensity],["Infill pattern",p.printSettings.infillPattern]])+table("Shell & Adhesion",[["Wall / perimeter lines",p.printSettings.wallLines],["Top layers",p.printSettings.topLayers],["Bottom layers",p.printSettings.bottomLayers],["Brim width",p.printSettings.brimWidth!==null?p.printSettings.brimWidth+" mm":null],["Raft",p.printSettings.raft],["Skirt lines / height",p.printSettings.skirtLines],["Ironing",p.printSettings.ironing],["Adhesion",p.printSettings.adhesion]])+`<div class="metric future"><h3>Future: Reprint Planning</h3><p>PrintFolio will eventually let you create a new print plan from this file—changing material, temperature, speed, fan cooling, supports, infill, and other settings while preserving the original print record.</p><p class="note">v0.1.x is intentionally read-only.</p></div>`;
     $("materialFileSummary").innerHTML=table("Current Print",[["Material in file",p.materialType],["Color in file",p.materialColor],["Filament used",p.filamentGrams!==null?grams(p.filamentGrams):meters(p.filamentMeters)],["Cost from file",p.filamentCost!==null?"$"+p.filamentCost.toFixed(2):"Not reported"]]);
     renderMaterials();
+    const list=materialLibrary();
+    const matchIndex=p.materialType?list.findIndex(m=>String(m.material||"").toLowerCase()===String(p.materialType).toLowerCase()):-1;
+    if(matchIndex>=0){$("materialSelect").value=String(matchIndex);updateCost()}
   }
 
   function empty(){const html='<div class="emptyPanel">Open a G-code, BGCODE, or 3MF file to populate this section.</div>';["dimensionsContent","temperaturesContent","speedsContent","filamentContent","coolingContent","bedsetupContent","settingsContent","materialFileSummary"].forEach(id=>$(id).innerHTML=html);renderMaterials()}
@@ -71,31 +88,12 @@
     $("basic").innerHTML=[["Print","—"],["File Type","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty();
   }
 
-  async function importMaterials(fileObject){
-    try{
-      const text=await fileObject.text(),data=JSON.parse(text),materials=Array.isArray(data)?data:data.materials,profiles=data.profiles||[];
-      if(!Array.isArray(materials))throw new Error("JSON must contain a materials array.");
-      saveMaterials(materials);if(Array.isArray(profiles))saveProfiles(profiles);renderMaterials();
-      $("materialStatus").textContent=`Imported ${materials.length} material${materials.length===1?"":"s"}${Array.isArray(profiles)?` and ${profiles.length} printer profile${profiles.length===1?"":"s"}`:""}.`;
-    }catch(err){$("materialStatus").textContent="Could not import material JSON: "+err.message}
-  }
-
-  function exportMaterials(){
-    const data={version:1,materials:materialLibrary(),profiles:materialProfiles()};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="printfolio-material-library.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    $("materialStatus").textContent="Material library exported as JSON.";
-  }
 
   ensureSeeded();
   file.addEventListener("change",()=>{const f=file.files?.[0];if(!f)return;$("status").textContent="Reading "+f.name+"…";const r=new FileReader();r.onload=async e=>{try{const p=await GCodeParser.parseBytes(new Uint8Array(e.target.result),f.name);state.parsed=p;GCodeRenderer.renderThumbnail(canvas,p);const empty=$("empty");empty.hidden=true;empty.style.display="none";$("fileLabel").textContent=f.name;$("previewFile").textContent=f.name;update(p);const extra=p.fileType==="BGCODE"?" • embedded metadata read":p.fileType==="3MF"?" • project metadata/model read":"";$("status").textContent=`Loaded ${f.name} • ${p.fileType}${extra}.`;}catch(err){console.error(err);$("status").textContent="Could not parse the file: "+err.message}};r.onerror=()=>$("status").textContent="The file could not be read.";r.readAsArrayBuffer(f)});
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
-  $("materialForm").addEventListener("submit",e=>{e.preventDefault();const m={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),brand:$("matBrand").value.trim(),material:$("matName").value.trim(),color:$("matColor").value.trim(),diameter:Number($("matDiameter").value),purchased:$("matPurchased").value||null,opened:$("matOpened").value||null,density:Number($("matDensity").value),density:Number($("matDensity").value),totalWeight:Number($("matWeight").value),totalCost:Number($("matCost").value)};if(!m.brand||!m.material||!Number.isFinite(m.density)||m.density<=0||!Number.isFinite(m.totalWeight)||!Number.isFinite(m.totalCost))return;const list=materialLibrary();list.push(m);saveMaterials(list);e.target.reset();renderMaterials();$("materialStatus").textContent="Material added. Printer-specific notes can be attached as profiles in a future library manager."});
-  $("materialList").addEventListener("click",e=>{const i=e.target.dataset.remove;if(i===undefined)return;const list=materialLibrary(),removed=list[Number(i)];list.splice(Number(i),1);saveMaterials(list);const profiles=materialProfiles().filter(p=>p.materialId!==removed?.id);saveProfiles(profiles);renderMaterials()});
-  $("importMaterials").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importMaterials(f);e.target.value=""});
-  $("exportMaterials").addEventListener("click",exportMaterials);
   $("openMaterialEditor").addEventListener("click",()=>window.open("material-editor.html","printfolio-material-editor","width=1200,height=800,resizable=yes,scrollbars=yes"));
   clear();
 })();
