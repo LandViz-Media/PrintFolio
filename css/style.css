@@ -1,7 +1,7 @@
-/* PrintFolio v0.1.7 — application styling. */
+/* PrintFolio v0.1.8 — application styling. */
 :root{--ink:#17344a;--blue:#2d6f9f;--light:#e7f0f6;--soft:#f2f5f6;--muted:#68757d;--border:#2d6f9f}
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#18252d;font:16px Arial,Helvetica,sans-serif}.app{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 22px}
-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:14px}.headerRight{display:flex;flex-direction:column;align-items:flex-end;gap:7px}.versionBadge{font-size:.78rem;color:var(--muted);line-height:1}h1{margin:0;color:var(--ink);font-size:clamp(2rem,5vw,3.4rem);font-weight:500;line-height:1}header p{margin:10px 0 0;color:var(--muted)}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:14px}.headerRight{display:flex;flex-direction:column;align-items:flex-end;gap:7px}.versionBadge{font-size:.78rem;color:var(--muted);line-height:1;align-self:flex-end;margin-bottom:1px}h1{margin:0;color:var(--ink);font-size:clamp(2rem,5vw,3.4rem);font-weight:500;line-height:1}header p{margin:10px 0 0;color:var(--muted)}
 .actions{display:flex;gap:10px;flex-wrap:wrap}.open,button,select,input{min-height:44px;border:1px solid var(--blue);border-radius:4px;padding:9px 12px;cursor:pointer;font:inherit}.open{display:inline-flex;align-items:center;background:var(--blue);color:white}.open input{position:absolute;opacity:0;width:1px;height:1px;padding:0;border:0}button{background:#fff;color:var(--ink)}
 .status{min-height:38px;padding:9px 12px;margin-bottom:14px;border:1px solid #c8d3d9;background:var(--soft);color:#3d4c54}.hero{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(320px,1.25fr);gap:18px}.card,.tabsCard{border:2px solid var(--blue);background:#fff}.preview,.info{min-height:300px}.preview{padding:14px}.info{padding:20px 28px}.heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:10px}.heading h2{margin:0}h2{margin:0 0 14px;font-size:1.25rem;font-weight:500}h3{margin:0 0 8px;color:var(--ink);font-size:1rem}
 .heading span{color:var(--muted);font-size:.9rem}.canvasBox{position:relative;width:100%;aspect-ratio:1.35;border:1px solid #c5d0d5;background:#edf2f4;overflow:hidden}canvas{width:100%;height:100%;display:block}.empty{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:#536169;text-align:center}.empty b{color:var(--ink)}
@@ -13,7 +13,7 @@ dl{margin:0}dl div{display:grid;grid-template-columns:minmax(115px,.7fr) minmax(
 .materialForm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0}
 .materialField{display:flex;flex-direction:column;gap:5px;min-width:0}
 .materialField label{font-size:.82rem;color:var(--muted);font-weight:600}
-.materialForm .materialSubmit{align-self:end;min-height:44px}
+.materialForm .materialSubmit{align-self:end;min-height:44px}.materialFormActions{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.materialFormActions button{min-height:44px}.materialFormActions #cancelMaterialEdit{border-color:#a8b5bc;color:#4b5960}.rowActions{white-space:nowrap}.rowActions button{min-height:36px;padding:6px 9px;margin-right:6px}
 .materialTools{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;align-items:center;padding-top:14px;border-top:1px solid #dbe2e5}
 .materialTools input[type=file]{display:none}
 .importButton{display:inline-flex;align-items:center}

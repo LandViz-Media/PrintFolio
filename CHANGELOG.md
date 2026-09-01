@@ -1,3 +1,26 @@
+# Changelog
+
+## 0.1.8
+
+### Material Library
+- Changed the Material Library from a read/delete-only pane to an editable manager with **Add Material**, **Edit**, **Save Changes**, **Cancel Edit**, and **Delete** actions.
+- Kept JSON import/export as the portable persistence mechanism for a local/GitHub-hosted static application.
+- Preserved the current `materials.json` starter data from v0.1.7 when rebuilding this release.
+- Kept printer-specific profiles separate from physical spool records.
+
+### Main Interface
+- Moved the development version badge to the upper-right of the header, above the main action buttons.
+- Kept the Print Inspection / Material Library workspace toggle.
+- Material Library no longer displays the print thumbnail or Basic Print Information.
+
+### 3MF / Development
+- Retained initial cross-slicer 3MF support and documented PrusaSlicer project-file support.
+- Added v0.2.0 planning notes for a larger interactive preview followed by systematic refinement of the inspection tabs.
+
+### Documentation
+- `README.md` remains the current project overview and roadmap.
+- `CHANGELOG.md` records implementation changes by version.
+
 # PrintFolio Changelog
 
 All notable PrintFolio development changes are recorded here. The README is reserved for the current project overview; this file is the running implementation history.

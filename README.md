@@ -65,7 +65,7 @@ Printer-specific material settings are stored separately as profiles. This allow
 
 For material-cost estimation, PrintFolio prefers file-reported filament weight. If only filament length is available, it estimates weight from filament length, diameter, and material density, then estimates cost from the spool's cost-per-gram.
 
-The Material Library currently supports local JSON import/export and deletion. Future management features will include adding/editing materials, spool tracking, remaining material, duplication, and full printer-profile management.
+The Material Library supports adding, editing, deleting, and local JSON import/export. JSON is the portable persistence mechanism for now; because a static GitHub-hosted app cannot write back to the repository, users can export their library and import it into a later build. Development releases must preserve the current `materials.json` starter data when rebuilding examples. Future management features include spool tracking, remaining material, duplication, and full printer-profile management.
 
 ## Data and privacy
 
@@ -99,7 +99,7 @@ Layers & Toolpath
 Future Reprint Planning
 ```
 
-Longer-term functionality includes interactive 3D/layer preview, combined Layers & Toolpath inspection, more complete 3MF and BGCODE support, richer Material Library management, spool consumption tracking, printer-specific profiles, and reprint planning that preserves the original print record.
+Longer-term functionality includes a larger interactive 3D/layer preview targeted for **v0.2.0**, combined Layers & Toolpath inspection, more complete 3MF and BGCODE support, richer Material Library management, spool consumption tracking, printer-specific profiles, and reprint planning that preserves the original print record. v0.2.0 will also be used to systematically refine each existing inspection tab after the larger preview area is established.
 
 ## Project files
 
@@ -116,6 +116,6 @@ Longer-term functionality includes interactive 3D/layer preview, combined Layers
 
 ## Version
 
-Current development version: **0.1.7**.
+Current development version: **0.1.8**.
 
 See `CHANGELOG.md` for version-by-version implementation changes.

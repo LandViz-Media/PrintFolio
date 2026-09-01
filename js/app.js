@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.7
+ * PrintFolio v0.1.8
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */

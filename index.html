@@ -1,14 +1,27 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.7"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.8"></head>
 <body><main class="app">
-<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="headerRight"><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button" aria-pressed="false">Material Library</button><button id="clear">Clear</button></div><span class="versionBadge">v0.1.7</span></div></header>
+<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="headerRight"><span class="versionBadge">v0.1.8</span><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button" aria-pressed="false">Material Library</button><button id="clear">Clear</button></div></div></header>
 <div id="status" class="status" aria-live="polite">Open a G-code, BGCODE, or 3MF file to begin.</div>
 <section id="materialLibraryPane" class="libraryPane" hidden aria-label="Material Library">
   <div class="materialManagerHeader"><div><h2>Material Library</h2><p>Manage spool records and printer-specific material profiles. Data is stored locally in this browser.</p></div><span class="note">JSON import/export is available for backup and transfer.</span></div>
-  <div class="materialTools"><button id="export">Export JSON</button><label class="open importButton"><input id="import" type="file" accept=".json,.txt">Import JSON</label><span id="status2" class="note" aria-live="polite"></span></div>
+  <form id="materialForm" class="materialForm" autocomplete="off">
+    <input id="materialEditIndex" type="hidden" value="">
+    <label class="materialField"><span>Brand</span><input id="matBrand" required placeholder="e.g. Overture"></label>
+    <label class="materialField"><span>Material</span><input id="matType" required placeholder="e.g. PLA"></label>
+    <label class="materialField"><span>Color</span><input id="matColor" required placeholder="e.g. Digital Blue"></label>
+    <label class="materialField"><span>Diameter (mm)</span><input id="matDiameter" type="number" step="0.01" min="0" required></label>
+    <label class="materialField"><span>Density (g/cm³)</span><input id="matDensity" type="number" step="0.001" min="0" required></label>
+    <label class="materialField"><span>Date purchased</span><input id="matPurchased" type="date"></label>
+    <label class="materialField"><span>Date opened</span><input id="matOpened" type="date"></label>
+    <label class="materialField"><span>Total weight (g)</span><input id="matWeight" type="number" step="1" min="0" required></label>
+    <label class="materialField"><span>Total cost</span><input id="matCost" type="number" step="0.01" min="0" required></label>
+    <div class="materialFormActions"><button id="saveMaterial" class="materialSubmit" type="submit">Add Material</button><button id="cancelMaterialEdit" type="button" hidden>Cancel Edit</button></div>
+  </form>
+  <div class="materialTools"><button id="export" type="button">Export JSON</button><label class="open importButton"><input id="import" type="file" accept=".json,.txt">Import JSON</label><span id="status2" class="note" aria-live="polite"></span></div>
   <div class="tableScroll"><table class="libraryTable"><thead><tr><th>Brand</th><th>Material</th><th>Color</th><th>Diameter</th><th>Density</th><th>Purchased</th><th>Opened</th><th>Weight</th><th>Cost</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
-  <div class="metric future"><h3>Material Library Manager</h3><p>The current manager supports library import/export and deletion. Future versions will add new/edit material forms, spool tracking, remaining weight, duplication, and full printer-profile management.</p></div>
+  <div class="metric future"><h3>Material Library Manager</h3><p>Add, edit, and delete spool records here. JSON import/export provides the portable backup while the project remains a local browser application.</p></div>
 </section>
 <section class="hero"><article class="card preview"><div class="heading"><h2>Thumbnail Preview</h2><span id="fileLabel">No file loaded</span></div><div class="canvasBox"><canvas id="canvas" width="720" height="520" aria-label="3D print thumbnail"></canvas><div id="empty" class="empty"><b>No print file loaded</b><span>Choose a G-code, BGCODE, or 3MF file to generate a preview.</span></div></div></article>
 <article class="card info"><h2>Basic Print Information</h2><dl id="basic"></dl></article></section>
@@ -37,5 +50,5 @@
 </div>
 
 </section></div></section>
-<footer>PrintFolio v0.1.7 <span>• Runs locally in your browser</span></footer></main>
-<script src="js/gcode-parser.js?v=0.1.7"></script><script src="js/renderer.js?v=0.1.7"></script><script src="js/app.js?v=0.1.7"></script><script src="js/material-editor.js?v=0.1.7"></script></body></html>
+<footer>PrintFolio v0.1.8 <span>• Runs locally in your browser</span></footer></main>
+<script src="js/gcode-parser.js?v=0.1.8"></script><script src="js/renderer.js?v=0.1.8"></script><script src="js/app.js?v=0.1.8"></script><script src="js/material-editor.js?v=0.1.8"></script></body></html>
