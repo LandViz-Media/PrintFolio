@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>G-Code Print Viewer</title>
+<title>PrintFolio</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <main class="app">
 <header>
-  <div><h1>G-Code Print Viewer</h1><p>Preview and inspect 3D-printer G-code without modifying it.</p></div>
-  <div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g">Open G-code</label><button id="clear">Clear</button></div>
+  <div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer G-code without modifying it.</p></div>
+  <div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode">Open G-code</label><button id="clear">Clear</button></div>
 </header>
 <div id="status" class="status" aria-live="polite">Open a G-code file to begin.</div>
 
@@ -33,6 +33,8 @@
 <button class="tab" data-tab="speeds">Print Speeds</button>
 <button class="tab" data-tab="filament">Filament Extrusion</button>
 <button class="tab" data-tab="cooling">Fan Cooling</button>
+<button class="tab" data-tab="bedsetup">Bed &amp; Printer Setup</button>
+<button class="tab" data-tab="settings">Print Settings</button>
 </nav>
 <div class="content">
 <section id="preview" class="panel active"><div class="grid"><div class="metric"><h3>Preview</h3><p>The v0.1.0 renderer creates a static top-down thumbnail from extrusion moves. The same geometry pipeline is intended to become the interactive renderer later.</p></div><div class="metric"><h3>File</h3><p id="previewFile">No file loaded.</p><p class="note">Travel moves are omitted from the thumbnail.</p></div></div></section>
@@ -41,9 +43,11 @@
 <section id="speeds" class="panel" hidden><div id="speedsContent" class="grid"></div></section>
 <section id="filament" class="panel" hidden><div id="filamentContent" class="grid"></div></section>
 <section id="cooling" class="panel" hidden><div id="coolingContent" class="grid"></div></section>
+<section id="bedsetup" class="panel" hidden><div id="bedsetupContent" class="grid"></div></section>
+<section id="settings" class="panel" hidden><div id="settingsContent" class="grid"></div></section>
 </div>
 </section>
-<footer>G-Code Print Viewer v0.1.0 <span>• Runs locally in your browser</span></footer>
+<footer>PrintFolio v0.1.1 <span>• Runs locally in your browser</span></footer>
 </main>
 <script src="js/gcode-parser.js"></script>
 <script src="js/renderer.js"></script>

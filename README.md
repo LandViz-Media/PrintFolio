@@ -1,41 +1,88 @@
-# PrintFolio — v0.1.0
+# PrintFolio — v0.1.1
 
-A local browser-based preview and inspection utility for 3D-printer G-code.
+PrintFolio is a local browser-based preview and inspection utility for 3D-printer G-code.
 
-## v0.1.0 scope
+The goal is simple: **remember what a print is and how it was configured without opening the slicer again.**
 
-- Open `.gcode`, `.gco`, or `.g` files
-- Generate a static top-down thumbnail from extrusion moves
-- Extract basic print information
-- Extract dimensions
-- Extract nozzle/bed temperatures
-- Extract print/travel speeds when available
-- Extract filament usage and extrusion mode
-- Detect fan/cooling commands
-- Detect layer count and movement counts
-- No slicing
-- No G-code editing
-- No full interactive toolpath viewer yet
-- No catalog/library yet
+PrintFolio is **not a slicer** and does not modify G-code.
 
-## Run
+## v0.1.1
 
-Open `index.html` in a modern browser and choose **Open G-code**.
+### File types
 
-For GitHub Pages, put `index.html` at the repository root and enable Pages for the main branch.
+- ASCII `.gcode`, `.gco`, and `.g`
+- Initial `.bgcode` support for Prusa's binary G-code format
+- BGCODE metadata is read from its metadata blocks
+- Embedded PNG thumbnails are detected and displayed when present
 
-## Architecture
+The supplied `extreme-test.bgcode` demonstrated that PrusaSlicer 2.9.6 embeds useful information including printer model, filament type, nozzle diameter, bed/nozzle temperatures, infill density, support state, layer height, maximum Z, filament usage, cost, estimated time, and an isometric thumbnail.
+
+### Tabs
+
+- Preview
+- Dimensions
+- Temperatures
+- Print Speeds
+- Filament Extrusion
+- Fan Cooling
+- Bed & Printer Setup
+- Print Settings
+
+Print Settings currently includes support, infill, wall/perimeter, top/bottom layers, brim, raft, skirt, ironing, and adhesion information when the slicer exposes those values.
+
+### Thumbnail strategy
+
+PrintFolio now prefers a slicer's embedded thumbnail when available. Otherwise it renders the parsed extrusion geometry using a diagonal/isometric projection rather than a strictly top-down view.
+
+This is intentional: the thumbnail renderer is the beginning of the renderer that will eventually support a full interactive preview.
+
+## Future direction
+
+The following are deliberately deferred:
+
+- Full interactive 3D/toolpath preview
+- Layer slider and layer-by-layer analysis
+- Detailed toolpath categories
+- Print simulation
+- G-code line inspection
+- Catalog/library indexing
+
+Items previously identified as individual-layer information and detailed toolpath information will eventually be combined into a **Layers & Toolpath** area rather than becoming separate tabs.
+
+## Browser architecture
 
 ```text
-G-code → Parser → metadata + extrusion geometry → Renderer → thumbnail
+                  G-code / BGCODE
+                         |
+                         v
+                  File-type detector
+                    /          \\
+                   /            \\
+             G-code parser   BGCODE metadata reader
+                   |              |
+                   +------+- -----+
+                          |
+                    Print metadata
+                          |
+                    Print renderer
+                          |
+                     Thumbnail
 ```
 
-The parser and renderer are deliberately separate so the thumbnail renderer can evolve into the full interactive renderer in a later release.
+The renderer is deliberately independent from the metadata parser. The eventual full preview can therefore reuse the same geometry/rendering architecture.
 
-## Test file
+## Running locally
 
-The initial development test was `Remote Roku Case.gcode`. The application does not require that file to be bundled; open it from its existing location.
+Open `index.html` in a modern browser and select **Open G-code**.
 
-## Important
+No server or build process is required for the current prototype.
 
-G-code metadata varies by slicer. The viewer reports values it can identify and does not invent missing values.
+## Inspiration
+
+The project was partly inspired by the existing open-source browser-based gCodeViewer, which demonstrates that local G-code visualization and analysis can work well in a browser. PrintFolio has a different emphasis: it is intended first as a **personal print reference/catalog tool**, with the thumbnail and metadata front and center.
+
+See: https://gcode.ws/
+
+## BGCODE implementation note
+
+Prusa's BGCODE format is a binary/block format with separate metadata and G-code blocks, compression/encoding options, checksums, and thumbnail blocks. The official `libbgcode` project provides the reference implementation and a WebAssembly build option. PrintFolio's current browser-only support intentionally starts with metadata and embedded thumbnails; full BGCODE geometry decoding will be added when the interactive renderer is developed.
