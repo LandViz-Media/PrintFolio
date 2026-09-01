@@ -1,6 +1,6 @@
 /**
- * PrintFolio v0.1.6
- * Responsibility: Provide the separate Material Library Manager window.
+ * PrintFolio v0.1.7
+ * Responsibility: Render and manage the shared Material Library pane; the same module can also support the standalone editor page.
  */
 (function(){
   "use strict";
@@ -19,5 +19,5 @@
   function exportJson(){const blob=new Blob([JSON.stringify({version:1,materials:materials(),profiles:profiles()},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="printfolio-material-library.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$("status2").textContent="Library exported."}
   async function importJson(f){try{const d=JSON.parse(await f.text()),m=Array.isArray(d)?d:d.materials;if(!Array.isArray(m))throw new Error("JSON must contain a materials array.");save(m);if(Array.isArray(d.profiles))localStorage.setItem("printfolio.materialProfiles",JSON.stringify(d.profiles));render();$("status2").textContent=`Imported ${m.length} materials.`}catch(e){$("status2").textContent="Import failed: "+e.message}}
   $("list").addEventListener("click",e=>{const i=e.target.dataset.remove;if(i===undefined)return;const m=materials(),removed=m[Number(i)];if(!confirm(`Delete ${removed?.brand||"this material"} ${removed?.material||""}?`))return;m.splice(Number(i),1);save(m);localStorage.setItem("printfolio.materialProfiles",JSON.stringify(profiles().filter(p=>p.materialId!==removed?.id)));render();$("status2").textContent="Material deleted."});
-  $("export").addEventListener("click",exportJson);$("import").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importJson(f);e.target.value=""});$("closeEditor").addEventListener("click",()=>window.close());render();
+  $("export").addEventListener("click",exportJson);$("import").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importJson(f);e.target.value=""});if($("closeEditor"))$("closeEditor").addEventListener("click",()=>window.close());render();
 })();

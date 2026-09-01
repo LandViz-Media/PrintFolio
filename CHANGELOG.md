@@ -2,7 +2,32 @@
 
 All notable PrintFolio development changes are recorded here. The README is reserved for the current project overview; this file is the running implementation history.
 
+## 0.1.7 — Development
+
+### Interface
+- Added a compact **v0.1.7** version badge to the upper-right of the main application header.
+- Changed **Material Library** from a separate popup window to an in-page workspace toggle. Clicking it replaces the print-inspection workspace; clicking it again returns to Print Inspection.
+- Opening a print file automatically returns to the Print Inspection workspace.
+- Removed the Material Library explanatory callout from the **Material & Cost** tab because the library is now directly accessible from the header.
+- Added a **Future Features** tab and moved planned functionality there, including Reprint/Update, interactive preview/layers, material-library expansion, and broader file support.
+- Added intentional line breaks and centered alignment for longer tab labels such as Print Speeds, Filament Extrusion, Fan Cooling, Bed & Printer Setup, Print Settings, Material & Cost, and Future Features.
+
+### Material Library
+- Reused the existing Material Library module inside the main page instead of opening `material-editor.html` in a new browser window.
+- Kept JSON import/export and deletion functionality available from the in-page library.
+- Kept `material-editor.html` as a reusable/standalone foundation for the module rather than removing it.
+
+### Preview
+- Confirmed the current thumbnail behavior intentionally keeps useful auxiliary print geometry such as skirts/supports visible while excluding recognizable startup/prime lines from the generated thumbnail.
+- Documented the future visibility controls for startup/prime lines, skirts, brims, rafts, supports, infill, walls, skin, and travel moves.
+
+### Documentation
+- Updated `README.md` to describe the current project state and architecture only.
+- Reserved `CHANGELOG.md` for version-by-version implementation changes.
+
 ## 0.1.6 — Development
+
+
 
 ### Changed
 - Removed the embedded Material Library management form/table from the **Material & Cost** tab. Material management is accessed through the separate **Material Library** button in the main header.

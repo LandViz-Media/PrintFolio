@@ -1,13 +1,19 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.6"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.7"></head>
 <body><main class="app">
-<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button">Material Library</button><button id="clear">Clear</button></div></header>
+<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="headerRight"><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button" aria-pressed="false">Material Library</button><button id="clear">Clear</button></div><span class="versionBadge">v0.1.7</span></div></header>
 <div id="status" class="status" aria-live="polite">Open a G-code, BGCODE, or 3MF file to begin.</div>
+<section id="materialLibraryPane" class="libraryPane" hidden aria-label="Material Library">
+  <div class="materialManagerHeader"><div><h2>Material Library</h2><p>Manage spool records and printer-specific material profiles. Data is stored locally in this browser.</p></div><span class="note">JSON import/export is available for backup and transfer.</span></div>
+  <div class="materialTools"><button id="export">Export JSON</button><label class="open importButton"><input id="import" type="file" accept=".json,.txt">Import JSON</label><span id="status2" class="note" aria-live="polite"></span></div>
+  <div class="tableScroll"><table class="libraryTable"><thead><tr><th>Brand</th><th>Material</th><th>Color</th><th>Diameter</th><th>Density</th><th>Purchased</th><th>Opened</th><th>Weight</th><th>Cost</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+  <div class="metric future"><h3>Material Library Manager</h3><p>The current manager supports library import/export and deletion. Future versions will add new/edit material forms, spool tracking, remaining weight, duplication, and full printer-profile management.</p></div>
+</section>
 <section class="hero"><article class="card preview"><div class="heading"><h2>Thumbnail Preview</h2><span id="fileLabel">No file loaded</span></div><div class="canvasBox"><canvas id="canvas" width="720" height="520" aria-label="3D print thumbnail"></canvas><div id="empty" class="empty"><b>No print file loaded</b><span>Choose a G-code, BGCODE, or 3MF file to generate a preview.</span></div></div></article>
 <article class="card info"><h2>Basic Print Information</h2><dl id="basic"></dl></article></section>
 <section class="tabsCard"><nav class="tabs" aria-label="Print information">
-<button class="tab active" data-tab="preview">Preview</button><button class="tab" data-tab="dimensions">Dimensions</button><button class="tab" data-tab="temperatures">Temperatures</button><button class="tab" data-tab="speeds">Print Speeds</button><button class="tab" data-tab="filament">Filament Extrusion</button><button class="tab" data-tab="cooling">Fan Cooling</button><button class="tab" data-tab="bedsetup">Bed &amp; Printer Setup</button><button class="tab" data-tab="settings">Print Settings</button><button class="tab" data-tab="material">Material &amp; Cost</button>
+<button class="tab active" data-tab="preview"><span>Preview</span></button><button class="tab" data-tab="dimensions"><span>Dimensions</span></button><button class="tab" data-tab="temperatures"><span>Temperatures</span></button><button class="tab" data-tab="speeds"><span>Print<br>Speeds</span></button><button class="tab" data-tab="filament"><span>Filament<br>Extrusion</span></button><button class="tab" data-tab="cooling"><span>Fan<br>Cooling</span></button><button class="tab" data-tab="bedsetup"><span>Bed &amp; Printer<br>Setup</span></button><button class="tab" data-tab="settings"><span>Print<br>Settings</span></button><button class="tab" data-tab="material"><span>Material &amp;<br>Cost</span></button><button class="tab" data-tab="future"><span>Future<br>Features</span></button>
 </nav><div class="content">
 <section id="preview" class="panel active"><div class="grid"><div class="metric"><h3>Preview</h3><p>PrintFolio prefers a slicer's embedded thumbnail when one is available. Otherwise it renders available geometry in a brighter, color-coded diagonal/isometric view.</p><p class="note">The eventual interactive renderer will build on this same architecture.</p></div><div class="metric"><h3>File</h3><p id="previewFile">No file loaded.</p><p class="note">Travel moves are omitted from the thumbnail.</p></div></div></section>
 <section id="dimensions" class="panel" hidden><div id="dimensionsContent" class="grid"></div></section>
@@ -17,6 +23,7 @@
 <section id="cooling" class="panel" hidden><div id="coolingContent" class="grid"></div></section>
 <section id="bedsetup" class="panel" hidden><div id="bedsetupContent" class="grid"></div></section>
 <section id="settings" class="panel" hidden><div id="settingsContent" class="grid"></div></section>
+<section id="future" class="panel" hidden><div id="futureContent" class="grid"></div></section>
 <section id="material" class="panel" hidden>
 <div class="grid">
   <div id="materialFileSummary" class="gridSingle"></div>
@@ -28,8 +35,7 @@
     <p class="note materialProfileNote">Printer-specific settings are stored separately from the spool record. The same material can therefore have different temperatures, speeds, and fan settings for different printers.</p>
   </div>
 </div>
-<div class="metric future materialLibraryCallout"><h3>Material Library</h3><p>Manage spools, materials, and printer-specific profiles from the <b>Material Library</b> button at the top of PrintFolio. The library is intentionally separate from this print inspection view.</p></div>
-<div class="metric future"><h3>Future: Reprint / Update</h3><p>This will become a planning workspace for older prints: select a current material and printer, compare the original settings with the selected profile, and adjust temperatures, speeds, fan cooling, supports, infill, and other settings for a new print without altering the original print record.</p><p class="note">v0.1.x remains intentionally read-only.</p></div>
+
 </section></div></section>
-<footer>PrintFolio v0.1.6 <span>• Runs locally in your browser</span></footer></main>
-<script src="js/gcode-parser.js?v=0.1.6"></script><script src="js/renderer.js?v=0.1.6"></script><script src="js/app.js?v=0.1.6"></script></body></html>
+<footer>PrintFolio v0.1.7 <span>• Runs locally in your browser</span></footer></main>
+<script src="js/gcode-parser.js?v=0.1.7"></script><script src="js/renderer.js?v=0.1.7"></script><script src="js/app.js?v=0.1.7"></script><script src="js/material-editor.js?v=0.1.7"></script></body></html>

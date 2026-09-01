@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.6
+ * PrintFolio v0.1.7
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */
@@ -71,15 +71,16 @@
     $("filamentContent").innerHTML=table("Filament",[["Reported length",meters(p.filamentMeters)],["Reported weight",grams(p.filamentGrams)],["Reported volume",p.filamentCm3!==null?p.filamentCm3.toFixed(2)+" cm³":"—"],["File-reported filament cost",p.filamentCost!==null?"$"+p.filamentCost.toFixed(2):"—"],["Extrusion mode",p.extrusionMode],["Retractions",p.movement.retractions.toLocaleString()]])+table("Scope",[["Purpose","Preview and inspection only"],["Slicing","Not performed by PrintFolio"]]);
     $("coolingContent").innerHTML=table("Fan Cooling",[["Cooling commands detected",p.coolingDetected?"Yes":"No"],["Maximum fan command",p.fanMax===null?"—":p.fanMax+" / 255"]])+table("File",[["G-code flavor",p.gcodeFlavor],["Thumbnail source",p.thumbnailSource||"PrintFolio renderer"]]);
     $("bedsetupContent").innerHTML=table("Bed / Leveling",[["Homing detected",p.bedSetup.homing?"Yes":"Not detected"],["Mesh probing detected",p.bedSetup.meshProbe?"Yes":"Not detected"],["Mesh load detected",p.bedSetup.meshLoad?"Yes":"Not detected"],["Leveling commands",p.bedSetup.meshCommands.length?p.bedSetup.meshCommands.join(", "):"—"],["Bed shape",p.bedSetup.bedShape]])+table("Printer Setup",[["Printer",p.printer],["Nozzle diameter",p.bedSetup.nozzleDiameter!==null?p.bedSetup.nozzleDiameter+" mm":"—"],["Filament diameter",p.bedSetup.filamentDiameter!==null?p.bedSetup.filamentDiameter+" mm":"—"],["Extruder count",p.bedSetup.extruderCount]]);
-    $("settingsContent").innerHTML=table("Supports & Infill",[["Supports",p.printSettings.support],["Support build plate only",p.printSettings.supportBuildplateOnly],["Infill density",p.printSettings.infillDensity],["Infill pattern",p.printSettings.infillPattern]])+table("Shell & Adhesion",[["Wall / perimeter lines",p.printSettings.wallLines],["Top layers",p.printSettings.topLayers],["Bottom layers",p.printSettings.bottomLayers],["Brim width",p.printSettings.brimWidth!==null?p.printSettings.brimWidth+" mm":null],["Raft",p.printSettings.raft],["Skirt lines / height",p.printSettings.skirtLines],["Ironing",p.printSettings.ironing],["Adhesion",p.printSettings.adhesion]])+`<div class="metric future"><h3>Future: Reprint Planning</h3><p>PrintFolio will eventually let you create a new print plan from this file—changing material, temperature, speed, fan cooling, supports, infill, and other settings while preserving the original print record.</p><p class="note">v0.1.x is intentionally read-only.</p></div>`;
+    $("settingsContent").innerHTML=table("Supports & Infill",[["Supports",p.printSettings.support],["Support build plate only",p.printSettings.supportBuildplateOnly],["Infill density",p.printSettings.infillDensity],["Infill pattern",p.printSettings.infillPattern]])+table("Shell & Adhesion",[["Wall / perimeter lines",p.printSettings.wallLines],["Top layers",p.printSettings.topLayers],["Bottom layers",p.printSettings.bottomLayers],["Brim width",p.printSettings.brimWidth!==null?p.printSettings.brimWidth+" mm":null],["Raft",p.printSettings.raft],["Skirt lines / height",p.printSettings.skirtLines],["Ironing",p.printSettings.ironing],["Adhesion",p.printSettings.adhesion]]);
     $("materialFileSummary").innerHTML=table("Current Print",[["Material in file",p.materialType],["Color in file",p.materialColor],["Filament used",p.filamentGrams!==null?grams(p.filamentGrams):meters(p.filamentMeters)],["Cost from file",p.filamentCost!==null?"$"+p.filamentCost.toFixed(2):"Not reported"]]);
+    $("futureContent").innerHTML=`<div class="metric"><h3>Reprint / Update</h3><p>PrintFolio will eventually let you create a new print plan from this file—changing material, printer, temperature, speed, fan cooling, supports, infill, and other settings while preserving the original print record.</p><p class="note">The original print file and its recorded settings will remain unchanged.</p></div><div class="metric"><h3>Interactive Preview &amp; Layers</h3><p>The future full preview will allow interactive rotation, zooming, layer selection, and visibility controls for startup/prime lines, skirts, brims, rafts, supports, infill, walls, skin, and travel moves.</p><p class="note">Layers and Toolpath analysis will be developed together rather than as separate tabs.</p></div><div class="metric"><h3>Material Library</h3><p>Future library management will add and edit materials, delete obsolete spools, track remaining material, duplicate spool records, and manage printer-specific profiles and recommendations.</p></div><div class="metric"><h3>File Support</h3><p>Expand normalized inspection across G-code, BGCODE, 3MF, and other slicer formats. Where possible, PrintFolio will preserve slicer-provided metadata and embedded previews instead of reconstructing information unnecessarily.</p></div>`;
     renderMaterials();
     const list=materialLibrary();
     const matchIndex=p.materialType?list.findIndex(m=>String(m.material||"").toLowerCase()===String(p.materialType).toLowerCase()):-1;
     if(matchIndex>=0){$("materialSelect").value=String(matchIndex);updateCost()}
   }
 
-  function empty(){const html='<div class="emptyPanel">Open a G-code, BGCODE, or 3MF file to populate this section.</div>';["dimensionsContent","temperaturesContent","speedsContent","filamentContent","coolingContent","bedsetupContent","settingsContent","materialFileSummary"].forEach(id=>$(id).innerHTML=html);renderMaterials()}
+  function empty(){const html='<div class="emptyPanel">Open a G-code, BGCODE, or 3MF file to populate this section.</div>';["dimensionsContent","temperaturesContent","speedsContent","filamentContent","coolingContent","bedsetupContent","settingsContent","materialFileSummary","futureContent"].forEach(id=>$(id).innerHTML=html);renderMaterials()}
 
   function clear(){
     state.parsed=null;
@@ -94,6 +95,11 @@
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
-  $("openMaterialEditor").addEventListener("click",()=>window.open("material-editor.html","printfolio-material-editor","width=1200,height=800,resizable=yes,scrollbars=yes"));
+  const mainInspection=document.querySelector(".hero");
+  const tabsCard=document.querySelector(".tabsCard");
+  function showInspection(){mainInspection.hidden=false;tabsCard.hidden=false;$("materialLibraryPane").hidden=true;$("openMaterialEditor").setAttribute("aria-pressed","false");$("openMaterialEditor").textContent="Material Library";}
+  function showLibrary(){mainInspection.hidden=true;tabsCard.hidden=true;$("materialLibraryPane").hidden=false;$("openMaterialEditor").setAttribute("aria-pressed","true");$("openMaterialEditor").textContent="Print Inspection";}
+  $("openMaterialEditor").addEventListener("click",()=>{if($("materialLibraryPane").hidden)showLibrary();else showInspection()});
+  file.addEventListener("change",showInspection);
   clear();
 })();
