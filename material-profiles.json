@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "materialId": "overture-pla-digital-blue-2025-12-20",
+      "printer": "Creality Ender-3 Pro",
+      "nozzleTemperature": 212,
+      "bedTemperature": 55,
+      "printSpeed": 80,
+      "notes": "Temp 212\u00b0C, bed 55\u00b0C, speed 80 mm/s on Ender-3 Pro"
+    },
+    {
+      "materialId": "hatchbox-petg-orange-2023-01-15",
+      "printer": "Creality Ender-3 Pro",
+      "nozzleTemperature": 243,
+      "bedTemperature": 60,
+      "printSpeed": 80,
+      "notes": "Temp 243\u00b0C, bed 60\u00b0C, speed 80 mm/s on Ender-3 Pro"
+    },
+    {
+      "materialId": "hatchbox-pla-grey-2020-04-15",
+      "printer": "Creality Ender-3 Pro",
+      "nozzleTemperature": 208,
+      "bedTemperature": 55,
+      "printSpeed": 80,
+      "notes": "Temp 208\u00b0C, bed 55\u00b0C, speed 80 mm/s on Ender-3 Pro"
+    }
+  ]
+}
