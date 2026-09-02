@@ -1,3 +1,20 @@
+# PrintFolio Changelog
+
+All notable PrintFolio development changes are recorded here. The README is reserved for the current project overview; this file is the running implementation history.
+
+## 0.1.8.2 — Final 0.1.x interface polish
+
+### Interface
+- Updated the application tagline to **Preview, inspect and catalog 3D-printer files with ease!**
+- Made the Print Inspection and Material Library workspaces structurally mutually exclusive so the inspection thumbnail, overview, and tabs are hidden while Material Library is active.
+- Kept the Material Library button as the workspace toggle and return-to-Print-Inspection control.
+- Updated the File Format Guide wording for Cura Universal Cura Projects (UCP) to describe their defined, printer-agnostic settings scope.
+- Preserved the existing PrintFolio logo, status area, Print Overview, file-size display, and empty-state improvements from 0.1.8.1.
+
+### Documentation
+- Updated the README tagline and current-version information.
+- This is intended as the final interface polish before the v0.2.0 architecture milestone.
+
 # Changelog
 
 ## 0.1.8.1 — Minor GUI and documentation update

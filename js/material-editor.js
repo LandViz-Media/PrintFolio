@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.8
+ * PrintFolio v0.1.8.2
  * Responsibility: Manage the in-page Material Library, including add, edit,
  * delete, import, export, and preservation of printer-specific profiles.
  */

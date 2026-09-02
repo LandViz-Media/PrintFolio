@@ -1,6 +1,6 @@
 # PrintFolio
 
-PrintFolio is a local, browser-based tool for previewing and inspecting 3D-printer files **without modifying or generating printer G-code**. The project is intended to become a personal print catalog: a place to remember what a print is, how it was configured, what material was used, what it cost, and eventually how an older print could be prepared for a new printer or material.
+PrintFolio is a local, browser-based tool to **preview, inspect and catalog 3D-printer files with ease**. It currently focuses on reading and inspecting files without modifying or generating printer G-code. The project is intended to become a personal print catalog: a place to remember what a print is, how it was configured, what material was used, what it cost, and eventually how an older print could be prepared for a new printer or material.
 
 ## Project overview
 
@@ -11,7 +11,7 @@ PrintFolio is intentionally different from a slicer. It reads files produced by 
 - **ASCII G-code** (`.gcode`, `.gco`, `.g`) — supported for common metadata, settings, movement analysis, embedded thumbnails, and generated 45° preview geometry.
 - **Prusa BGCODE** (`.bgcode`) — supported for embedded metadata and slicer thumbnails; full binary toolpath decoding is still developing.
 - **3MF** (`.3mf`) — supported for model geometry, dimensions, metadata, and embedded thumbnails; slicer/project settings are available when the 3MF actually contains them.
-- **Cura UCP 3MF** — under testing because these project files can contain extensive Cura printer, material, and print settings.
+- **Cura UCP 3MF** — under testing because these project files can contain a model plus a defined set of printer-agnostic Cura settings.
 - **PrusaSlicer 3MF** — under testing as representative complete project files become available.
 
 The parser normalizes information from different slicers into common PrintFolio fields rather than assuming that every slicer calls a setting the same thing.
@@ -26,7 +26,7 @@ The main window provides two top-level workspaces:
 Print Inspection currently provides:
 
 - Thumbnail Preview
-- Basic Print Information
+- Print Overview
 - Dimensions
 - Temperatures
 - Print Speeds
@@ -118,7 +118,7 @@ Longer-term functionality includes a larger interactive 3D/layer preview targete
 
 ## Version
 
-Current development version: **0.1.8**.
+Current development version: **0.1.8.2**.
 
 See `CHANGELOG.md` for version-by-version implementation changes.
 
@@ -127,4 +127,4 @@ See `CHANGELOG.md` for version-by-version implementation changes.
 See `docs/file-formats.md` for the current supported, developing, testing, and future file-format matrix. The application exposes the same guide from the main status/message area.
 
 ### Current GUI
-The 0.1.8.1 GUI correction build includes the PrintFolio logo, a `Print Overview` heading, file size in the overview, and a simplified empty thumbnail heading.
+The 0.1.8.2 interface polish keeps Print Inspection and Material Library as mutually exclusive workspaces, updates the application tagline, and retains the 0.1.8.1 GUI corrections.

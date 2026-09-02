@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.8.1
+ * PrintFolio v0.1.8.2
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */
@@ -149,10 +149,22 @@
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
-  const mainInspection=document.querySelector(".hero");
-  const tabsCard=document.querySelector(".tabsCard");
-  function showInspection(){mainInspection.hidden=false;tabsCard.hidden=false;$("materialLibraryPane").hidden=true;$("openMaterialEditor").setAttribute("aria-pressed","false");$("openMaterialEditor").textContent="Material Library";}
-  function showLibrary(){mainInspection.hidden=true;tabsCard.hidden=true;$("materialLibraryPane").hidden=false;$("openMaterialEditor").setAttribute("aria-pressed","true");$("openMaterialEditor").textContent="Print Inspection";}
+  // The two top-level workspaces are mutually exclusive: showing the Material Library
+  // hides the entire Print Inspection workspace, not just individual inspection panels.
+  const inspectionWorkspace=$("inspectionWorkspace");
+  const materialLibraryPane=$("materialLibraryPane");
+  function showInspection(){
+    inspectionWorkspace.hidden=false;
+    materialLibraryPane.hidden=true;
+    $("openMaterialEditor").setAttribute("aria-pressed","false");
+    $("openMaterialEditor").textContent="Material Library";
+  }
+  function showLibrary(){
+    inspectionWorkspace.hidden=true;
+    materialLibraryPane.hidden=false;
+    $("openMaterialEditor").setAttribute("aria-pressed","true");
+    $("openMaterialEditor").textContent="Print Inspection";
+  }
   $("openMaterialEditor").addEventListener("click",()=>{if($("materialLibraryPane").hidden)showLibrary();else showInspection()});
   file.addEventListener("change",showInspection);
   clear();
