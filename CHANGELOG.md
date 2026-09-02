@@ -122,3 +122,9 @@ All notable PrintFolio development changes are recorded here. The README is rese
 
 - Initial browser-based G-code preview/inspection prototype.
 - Added basic metadata, dimensions, temperature, speed, extrusion, and cooling views.
+## 0.1.8.1 GUI correction build
+- Replaced the empty-state `No file loaded` label beside Thumbnail Preview with an empty heading area; the global status bar remains the instruction/status location.
+- Renamed `Basic Print Information` to `Print Overview`.
+- Added file size to Print Overview, populated from the loaded file itself.
+- Added the PrintFolio logo to the application header.
+- Updated asset cache-busting query strings for the current GUI build.

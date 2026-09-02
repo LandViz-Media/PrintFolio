@@ -125,3 +125,6 @@ See `CHANGELOG.md` for version-by-version implementation changes.
 ## File Format Guide
 
 See `docs/file-formats.md` for the current supported, developing, testing, and future file-format matrix. The application exposes the same guide from the main status/message area.
+
+### Current GUI
+The 0.1.8.1 GUI correction build includes the PrintFolio logo, a `Print Overview` heading, file size in the overview, and a simplified empty thumbnail heading.

@@ -5,9 +5,9 @@
  */
 (function(){
   "use strict";
-  const $=id=>document.getElementById(id),state={parsed:null},file=$("file"),canvas=$("canvas");
+  const $=id=>document.getElementById(id),state={parsed:null,fileSize:0},file=$("file"),canvas=$("canvas");
   const esc=v=>String(v??"—").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"),dash=v=>v===null||v===undefined||v===""?"—":v;
-  const mm=v=>Number.isFinite(v)?v.toFixed(2)+" mm":"—",temp=v=>Number.isFinite(v)?v.toFixed(0)+" °C":"—",speed=v=>Number.isFinite(v)?(v/60).toFixed(1)+" mm/s":"—",meters=v=>Number.isFinite(v)?v.toFixed(2)+" m":"—",grams=v=>Number.isFinite(v)?v.toFixed(2)+" g":"—";
+  const fileSize=v=>Number.isFinite(v)?(v<1024?`${v} B`:v<1024*1024?`${(v/1024).toFixed(1)} KB`:`${(v/1024/1024).toFixed(2)} MB`):"—",mm=v=>Number.isFinite(v)?v.toFixed(2)+" mm":"—",temp=v=>Number.isFinite(v)?v.toFixed(0)+" °C":"—",speed=v=>Number.isFinite(v)?(v/60).toFixed(1)+" mm/s":"—",meters=v=>Number.isFinite(v)?v.toFixed(2)+" m":"—",grams=v=>Number.isFinite(v)?v.toFixed(2)+" g":"—";
   function table(title,rows){return `<div class="metric"><h3>${esc(title)}</h3><table><tbody>${rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(dash(r[1]))}</td></tr>`).join("")}</tbody></table></div>`}
   function setStatus(message,severity="info",icon="ⓘ"){
     const el=$("status"),msg=$("statusMessage");
@@ -85,7 +85,7 @@
   }
 
   function update(p){
-    $("basic").innerHTML=[["Print",p.fileName],["File Type",p.fileType],["Printer",p.printer],["Slicer",p.slicer],["Source Model",p.sourceModel],["Material",p.materialType],["Print Time",p.printTimeDisplay],["Filament",p.filamentMeters!==null?meters(p.filamentMeters):grams(p.filamentGrams)]].map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(dash(r[1]))}</dd></div>`).join("");
+    $("basic").innerHTML=[["Print",p.fileName],["File Type",p.fileType],["File Size",fileSize(state.fileSize)],["Printer",p.printer],["Slicer",p.slicer],["Source Model",p.sourceModel],["Material",p.materialType],["Print Time",p.printTimeDisplay],["Filament",p.filamentMeters!==null?meters(p.filamentMeters):grams(p.filamentGrams)]].map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(dash(r[1]))}</dd></div>`).join("");
     const zNote=p.dimensionNotes?.length?p.dimensionNotes.join(" "):null;
     $("dimensionsContent").innerHTML=table("Overall Size",[["X",mm(p.dimensionSize.x)],["Y",mm(p.dimensionSize.y)],["Z",mm(p.dimensionSize.z!==null?p.dimensionSize.z:p.maxLayerZ)],["Layer Height",mm(p.layerHeight)],["Layers",p.layerCount||"—"]])+(zNote?`<div class="metric noteBox"><b>Dimension note</b><p>${esc(zNote)}</p></div>`:"")+table("Bounding Box",[["X Minimum",mm(p.bounds.minX)],["X Maximum",mm(p.bounds.maxX)],["Y Minimum",mm(p.bounds.minY)],["Y Maximum",mm(p.bounds.maxY)],["Z Minimum",mm(p.bounds.minZ)],["Z Maximum",mm(p.bounds.maxZ)]]);
     $("temperaturesContent").innerHTML=table("Nozzle",[["Initial / warm-up",temp(p.initialNozzleTemperature)],["Print temperature",temp(p.nozzleTemperature)]])+table("Build Plate",[["Initial / first layer",temp(p.initialBedTemperature)],["Print temperature",temp(p.bedTemperature)]]);
@@ -107,8 +107,8 @@
   function clear(){
     state.parsed=null;
     const c=canvas.getContext("2d");c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle="#f4f7f8";c.fillRect(0,0,canvas.width,canvas.height);
-    $("empty").hidden=false;$("empty").style.display="flex";$("fileLabel").textContent="No file loaded";$("previewFile").textContent="No file loaded.";setStatus("Open a G-code, BGCODE, or 3MF file to begin.","info","ⓘ");
-    $("basic").innerHTML=[["Print","—"],["File Type","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty();
+    $("empty").hidden=false;$("empty").style.display="flex";$("fileLabel").textContent="";$("previewFile").textContent="No file loaded.";setStatus("Open a G-code, BGCODE, or 3MF file to begin.","info","ⓘ");
+    $("basic").innerHTML=[["Print","—"],["File Type","—"],["File Size","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty();
   }
 
 
@@ -117,6 +117,7 @@
   file.addEventListener("change",()=>{
     const f=file.files?.[0];
     if(!f)return;
+    state.fileSize=f.size;
     setStatus(`Reading ${esc(f.name)}…`,"info","⟳");
     const r=new FileReader();
     r.onload=async e=>{
