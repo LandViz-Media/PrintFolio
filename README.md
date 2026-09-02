@@ -8,9 +8,11 @@ PrintFolio is intentionally different from a slicer. It reads files produced by 
 
 ### Supported file types
 
-- **ASCII G-code** (`.gcode`, `.gco`, `.g`) — metadata, settings, movement analysis, embedded thumbnails, and generated 45° preview geometry.
-- **Prusa BGCODE** (`.bgcode`) — embedded metadata and slicer thumbnail in the current release; full binary toolpath decoding is future work.
-- **3MF** (`.3mf`) — initial project/model reading, mesh dimensions, metadata, and embedded thumbnails where available.
+- **ASCII G-code** (`.gcode`, `.gco`, `.g`) — supported for common metadata, settings, movement analysis, embedded thumbnails, and generated 45° preview geometry.
+- **Prusa BGCODE** (`.bgcode`) — supported for embedded metadata and slicer thumbnails; full binary toolpath decoding is still developing.
+- **3MF** (`.3mf`) — supported for model geometry, dimensions, metadata, and embedded thumbnails; slicer/project settings are available when the 3MF actually contains them.
+- **Cura UCP 3MF** — under testing because these project files can contain extensive Cura printer, material, and print settings.
+- **PrusaSlicer 3MF** — under testing as representative complete project files become available.
 
 The parser normalizes information from different slicers into common PrintFolio fields rather than assuming that every slicer calls a setting the same thing.
 
@@ -119,3 +121,7 @@ Longer-term functionality includes a larger interactive 3D/layer preview targete
 Current development version: **0.1.8**.
 
 See `CHANGELOG.md` for version-by-version implementation changes.
+
+## File Format Guide
+
+See `docs/file-formats.md` for the current supported, developing, testing, and future file-format matrix. The application exposes the same guide from the main status/message area.

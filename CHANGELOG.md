@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8.1 — Minor GUI and documentation update
+
+- Reworked the main status/message area so it can display informational, success, warning, and error messages with appropriate visual severity.
+- Added the message **Embedded thumbnail found** when PrintFolio uses a slicer-supplied thumbnail.
+- Added the **File Format Guide** popover to the same message area.
+- Added `docs/file-formats.md` describing current, developing, testing, and future file-format support.
+- Updated the application and footer version to 0.1.8.1.
+
+
 ## 0.1.8
 
 ### Material Library

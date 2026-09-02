@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.8"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrintFolio</title><link rel="stylesheet" href="css/style.css?v=0.1.8.1"></head>
 <body><main class="app">
-<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="headerRight"><span class="versionBadge">v0.1.8</span><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button" aria-pressed="false">Material Library</button><button id="clear">Clear</button></div></div></header>
-<div id="status" class="status" aria-live="polite">Open a G-code, BGCODE, or 3MF file to begin.</div>
+<header><div><h1>PrintFolio</h1><p>Preview and inspect 3D-printer files without modifying them.</p></div><div class="headerRight"><span class="versionBadge">v0.1.8.1</span><div class="actions"><label class="open"><input id="file" type="file" accept=".gcode,.gco,.g,.bgcode,.3mf">Open Print File</label><button id="openMaterialEditor" type="button" aria-pressed="false">Material Library</button><button id="clear">Clear</button></div></div></header>
+<div id="status" class="status status-info" aria-live="polite"><span id="statusMessage"><strong>ⓘ</strong><span>Open a G-code, BGCODE, or 3MF file to begin.</span></span><span class="formatGuideWrap"><button id="formatGuide" class="formatGuide" type="button" aria-expanded="false">File Format Guide ⓘ</button><div id="formatGuidePopup" class="formatGuidePopup" hidden><h3>File Format Guide</h3><p><b>G-code (.gcode)</b> — Supported. PrintFolio can read common metadata, settings, dimensions, filament data, and extrusion geometry.</p><p><b>BGCODE (.bgcode)</b> — Supported for metadata and embedded thumbnails. Full binary toolpath decoding is still developing.</p><p><b>3MF (.3mf)</b> — Supported for model geometry, dimensions, thumbnails, and project settings when those settings are present.</p><p><b>Cura UCP 3MF</b> — Under testing. These files can contain extensive Cura printer, material, and print settings.</p><p><b>Prusa 3MF</b> — Under testing. Project contents and settings are being evaluated.</p><p><b>Other slicer formats</b> — Future investigation.</p></div></span></div>
 <section id="materialLibraryPane" class="libraryPane" hidden aria-label="Material Library">
   <div class="materialManagerHeader"><div><h2>Material Library</h2><p>Manage spool records and printer-specific material profiles. Data is stored locally in this browser.</p></div><span class="note">JSON import/export is available for backup and transfer.</span></div>
   <form id="materialForm" class="materialForm" autocomplete="off">
@@ -50,5 +50,5 @@
 </div>
 
 </section></div></section>
-<footer>PrintFolio v0.1.8 <span>• Runs locally in your browser</span></footer></main>
+<footer>PrintFolio v0.1.8.1 <span>• Runs locally in your browser</span></footer></main>
 <script src="js/gcode-parser.js?v=0.1.8"></script><script src="js/renderer.js?v=0.1.8"></script><script src="js/app.js?v=0.1.8"></script><script src="js/material-editor.js?v=0.1.8"></script></body></html>

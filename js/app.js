@@ -1,5 +1,5 @@
 /**
- * PrintFolio v0.1.8
+ * PrintFolio v0.1.8.1
  * Responsibility: Connect file loading, parsing, thumbnail rendering, tabs,
  * material-cost tracking, JSON import/export, and future reprint planning.
  */
@@ -9,6 +9,28 @@
   const esc=v=>String(v??"—").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"),dash=v=>v===null||v===undefined||v===""?"—":v;
   const mm=v=>Number.isFinite(v)?v.toFixed(2)+" mm":"—",temp=v=>Number.isFinite(v)?v.toFixed(0)+" °C":"—",speed=v=>Number.isFinite(v)?(v/60).toFixed(1)+" mm/s":"—",meters=v=>Number.isFinite(v)?v.toFixed(2)+" m":"—",grams=v=>Number.isFinite(v)?v.toFixed(2)+" g":"—";
   function table(title,rows){return `<div class="metric"><h3>${esc(title)}</h3><table><tbody>${rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(dash(r[1]))}</td></tr>`).join("")}</tbody></table></div>`}
+  function setStatus(message,severity="info",icon="ⓘ"){
+    const el=$("status"),msg=$("statusMessage");
+    if(!el||!msg)return;
+    el.className=`status status-${severity}`;
+    msg.innerHTML=`<strong>${icon}</strong><span>${message}</span>`;
+  }
+  function initFormatGuide(){
+    const popup=$("formatGuidePopup"),button=$("formatGuide");
+    if(!popup||!button)return;
+    let pinned=false;
+    const open=()=>{popup.hidden=false;button.setAttribute("aria-expanded","true")};
+    const close=()=>{if(!pinned){popup.hidden=true;button.setAttribute("aria-expanded","false")}};
+    button.setAttribute("aria-expanded","false");
+    button.addEventListener("mouseenter",open);
+    button.addEventListener("mouseleave",()=>setTimeout(()=>{if(!popup.matches(":hover")&&!button.matches(":hover")&&!pinned)close()},100));
+    popup.addEventListener("mouseleave",()=>{if(!pinned&&document.activeElement!==button)close()});
+    button.addEventListener("focus",open);
+    button.addEventListener("blur",()=>setTimeout(()=>{if(!popup.matches(":hover")&&!pinned)close()},100));
+    button.addEventListener("click",()=>{pinned=!pinned;if(pinned)open();else close()});
+    document.addEventListener("click",e=>{if(!popup.contains(e.target)&&e.target!==button){pinned=false;close()}});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"){pinned=false;close();button.blur()}});
+  }
 
   const defaultMaterials=[
     {id:"overture-pla-digital-blue-2025-12-20",brand:"Overture",material:"PLA",color:"Digital Blue",diameter:1.75,density:1.24,purchased:"2025-12-20",opened:"2025-12-30",totalWeight:1000,totalCost:17.68},
@@ -85,13 +107,44 @@
   function clear(){
     state.parsed=null;
     const c=canvas.getContext("2d");c.clearRect(0,0,canvas.width,canvas.height);c.fillStyle="#f4f7f8";c.fillRect(0,0,canvas.width,canvas.height);
-    $("empty").hidden=false;$("empty").style.display="flex";$("fileLabel").textContent="No file loaded";$("previewFile").textContent="No file loaded.";$("status").textContent="Open a G-code, BGCODE, or 3MF file to begin.";
+    $("empty").hidden=false;$("empty").style.display="flex";$("fileLabel").textContent="No file loaded";$("previewFile").textContent="No file loaded.";setStatus("Open a G-code, BGCODE, or 3MF file to begin.","info","ⓘ");
     $("basic").innerHTML=[["Print","—"],["File Type","—"],["Printer","—"],["Slicer","—"],["Source Model","—"],["Material","—"],["Print Time","—"],["Filament","—"]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");empty();
   }
 
 
   ensureSeeded();
-  file.addEventListener("change",()=>{const f=file.files?.[0];if(!f)return;$("status").textContent="Reading "+f.name+"…";const r=new FileReader();r.onload=async e=>{try{const p=await GCodeParser.parseBytes(new Uint8Array(e.target.result),f.name);state.parsed=p;GCodeRenderer.renderThumbnail(canvas,p);const empty=$("empty");empty.hidden=true;empty.style.display="none";$("fileLabel").textContent=f.name;$("previewFile").textContent=f.name;update(p);const extra=p.fileType==="BGCODE"?" • embedded metadata read":p.fileType==="3MF"?" • project metadata/model read":"";$("status").textContent=`Loaded ${f.name} • ${p.fileType}${extra}.`;}catch(err){console.error(err);$("status").textContent="Could not parse the file: "+err.message}};r.onerror=()=>$("status").textContent="The file could not be read.";r.readAsArrayBuffer(f)});
+  initFormatGuide();
+  file.addEventListener("change",()=>{
+    const f=file.files?.[0];
+    if(!f)return;
+    setStatus(`Reading ${esc(f.name)}…`,"info","⟳");
+    const r=new FileReader();
+    r.onload=async e=>{
+      try{
+        const p=await GCodeParser.parseBytes(new Uint8Array(e.target.result),f.name);
+        state.parsed=p;
+        GCodeRenderer.renderThumbnail(canvas,p);
+        const empty=$("empty");
+        empty.hidden=true;empty.style.display="none";
+        $("fileLabel").textContent=f.name;$("previewFile").textContent=f.name;
+        update(p);
+        if(p.thumbnailSource){
+          setStatus(`<b>Embedded thumbnail found</b> — PrintFolio is using the thumbnail supplied by the slicer.`,"info","ⓘ");
+        }else if(p.fileType==="BGCODE"){
+          setStatus(`<b>BGCODE metadata read</b> — Full binary toolpath decoding is still under development.`,"warning","⚠");
+        }else if(p.fileType==="3MF" && p.dimensionNotes?.length){
+          setStatus(`<b>3MF model information found</b> — PrintFolio calculated dimensions from the model geometry.`,"info","ⓘ");
+        }else{
+          setStatus(`Loaded ${esc(f.name)} • ${esc(p.fileType)}.`,"success","✓");
+        }
+      }catch(err){
+        console.error(err);
+        setStatus(`Could not parse the file: ${esc(err.message)}`,"error","⚠");
+      }
+    };
+    r.onerror=()=>setStatus("The file could not be read.","error","⚠");
+    r.readAsArrayBuffer(f);
+  });
   $("clear").addEventListener("click",()=>{file.value="";clear()});
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));document.querySelectorAll(".panel").forEach(x=>{const on=x.id===t.dataset.tab;x.hidden=!on;x.classList.toggle("active",on)})}));
   $("materialSelect").addEventListener("change",updateCost);
